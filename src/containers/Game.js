@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import GameBoard from '../components/Board'
 import PlayerBar from '../components/PlayerBar'
 import Options from '../components/Options'
+import Rules from '../components/Rules'
 import Winner from '../components/Winner'
 
 import Checkers from '../classes/models/Checkers.js'
@@ -20,6 +21,7 @@ class Game extends Component {
       board: null,
       piece: null,
       showMenu: false,
+      showRules: false,
       turn: 'blue',
       winner: null,
       highlightedCells: []
@@ -55,6 +57,7 @@ class Game extends Component {
       board: board,
       piece: null,
       showMenu: false,
+      showRules: false,
       turn: 'blue',
       winner: null,
       highlightedCells: []
@@ -70,6 +73,18 @@ class Game extends Component {
   dismissMenu() {
     this.setState( {
       showMenu: false
+    })
+  }
+
+  dismissRules() {
+    this.setState( {
+      showRules: false
+    })
+  }
+
+  showRules() {
+    this.setState( {
+      showRules: true
     })
   }
 
@@ -105,7 +120,13 @@ class Game extends Component {
       <div>
         <PlayerBar board={ this.state.board } />
         <Options onClick={ this.onOptionsClick.bind( this ) } />
-        <Menu show={ this.state.showMenu } onDismiss={ this.dismissMenu.bind( this ) } updateBoard={ this.updateBoard.bind( this ) } />
+        <Menu
+          show={ this.state.showMenu }
+          onDismiss={ this.dismissMenu.bind( this ) }
+          showRules={ this.showRules.bind( this ) }
+          updateBoard={ this.updateBoard.bind( this ) }
+        />
+        <Rules show={ this.state.showRules } onDismiss={ this.dismissRules.bind( this ) } />
         <Winner winner={ this.state.winner } />
         <GameBoard
           onPieceClick={ this.onPieceClick.bind( this ) }

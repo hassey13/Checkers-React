@@ -150,6 +150,41 @@ nav li {
   color: red;
 }
 
+.rules {
+  position: absolute;
+  margin-left: calc( 50% - 185px );
+  margin-top: 10px;
+  width: 350px;
+  padding: 10px 10px 25px 10px;
+  text-align: center;
+  color: #fff;
+  font-family: arial;
+  font-size: 0.8em;
+  border-radius: 25px;
+  background-color: #2A2A2A;
+  cursor: pointer;
+}
+
+.rules-dismiss {
+  position: absolute;
+  margin: 10px 10px 0 0;
+  right: 0;
+  top: 0;
+  background-color: red;
+  color: #fff;
+  font-family: arial;
+  font-weight: bold;
+  font-size: 1em;
+  padding: 4px 7px 3px 7px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.rules-dismiss:hover {
+  background-color: #fff;
+  color: red;
+}
+
 .winner {
   position: absolute;
   margin-left: calc( 50% - 125px );

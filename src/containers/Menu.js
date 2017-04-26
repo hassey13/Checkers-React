@@ -22,6 +22,7 @@ class Menu extends Component {
 
   listRules() {
     this.props.onDismiss()
+    this.props.showRules()
   }
 
   resignGame() {
