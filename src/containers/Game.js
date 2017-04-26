@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 
 import GameBoard from '../components/Board'
+import PlayerBar from '../components/PlayerBar'
 
 import Checkers from '../classes/models/Checkers.js'
 import Board from '../classes/models/Board.js'
@@ -65,6 +66,7 @@ class Game extends Component {
 
     return (
       <div>
+        <PlayerBar board={ this.state.board } />
         <GameBoard
           onPieceClick={ this.onPieceClick.bind( this ) }
           onCellClick={ this.onCellClick.bind( this ) }

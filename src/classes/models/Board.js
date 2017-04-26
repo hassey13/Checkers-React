@@ -80,7 +80,7 @@ export default class Board {
 
   announceWinner(player) {
     setTimeout( () => {
-      alert(`GameOver! ${player.name} Wins!`)
+      alert(`Game over! ${player.name.toUpperCase()} Wins!`)
     }, 500)
   }
 
