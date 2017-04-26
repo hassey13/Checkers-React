@@ -4,8 +4,9 @@ const TurnIndicator = ( props ) => {
 
 
   return (
-    <div className={`turn-indicator ${props.turn}`} >
-      { `${props.turn.toUpperCase()}'s Turn` }
+    <div className='turn-indicator' >
+      <p className='small-font'>Turn</p>
+      <p className={`turn-font ${props.turn}`}>{ `${props.turn.toUpperCase()}` }</p>
     </div>
   )
 }
