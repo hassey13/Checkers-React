@@ -7,11 +7,11 @@ export default class Player {
     this.pieces = this.generatePieces()
     this.board = board
   }
-  å
+  
   generatePieces() {
     let piecesContainer = []
-    for (let i=0 ; i < 12 ; i++) {
-      piecesContainer.push(new Piece(this,`${this.color}-${i}`))
+    while ( piecesContainer.length < 12 ) {
+      piecesContainer.push(new Piece(this, piecesContainer.length + 1))
     }
     return piecesContainer
   }

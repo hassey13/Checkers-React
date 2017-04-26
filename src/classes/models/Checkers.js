@@ -1,6 +1,3 @@
-import $ from 'jquery'
-
-
 export default class Checkers {
   constructor() {
     this.name = 'Checkers'
@@ -10,8 +7,14 @@ export default class Checkers {
   addBoard(board) {
     this.board = board
   }
-  validMove(destination,piece) {
-    if (this.cellIsOccupied(destination) || piece.player.color !== this.board.players[this.board.turn % 2].color) {
+
+  validMove(destination, piece, execute) {
+
+    if ( !!this.board.lastPieceThatJumpped ) {
+      return false
+    }
+
+    if (this.cellIsOccupied(destination) || piece.player.color !== this.board.turn ) {
       return false
     }
 
@@ -26,8 +29,10 @@ export default class Checkers {
     switch (piece.direction) {
       case 'down':
         if ( downRight || downLeft ) {
-          this.board.turn += 1;
-          this.board.lastPieceThatJumpped = null;
+          if( execute ) {
+            this.board.turn = this.board.turn === 'blue' ? 'red' : 'blue';
+            this.board.lastPieceThatJumpped = null;
+          }
           return true
         }
         else {
@@ -35,8 +40,10 @@ export default class Checkers {
         }
       case 'up':
         if (upRight || upLeft) {
-          this.board.turn += 1;
-          this.board.lastPieceThatJumpped = null;
+          if( execute ) {
+            this.board.turn = this.board.turn === 'blue' ? 'red' : 'blue';
+            this.board.lastPieceThatJumpped = null;
+          }
           return true
         }
         else {
@@ -44,8 +51,10 @@ export default class Checkers {
         }
       case 'upanddown':
         if ( downRight || downLeft || upLeft || upRight ) {
-          this.board.turn += 1;
-          this.board.lastPieceThatJumpped = null;
+          if( execute ) {
+            this.board.turn = this.board.turn === 'blue' ? 'red' : 'blue';
+            this.board.lastPieceThatJumpped = null;
+          }
           return true
         }
         else {
@@ -56,14 +65,19 @@ export default class Checkers {
     }
   }
 
-  validJump(destination,piece) {
-    if (this.board.lastPieceThatJumpped !== null && piece.player.color === this.board.lastPieceThatJumpped.player.color && piece.id === this.board.lastPieceThatJumpped.id ) {
-      this.board.turn -= 1;
-    }
+  validJump(destination, piece, execute) {
+    // if (this.board.lastPieceThatJumpped !== null && piece.player.color === this.board.lastPieceThatJumpped.player.color && piece.id === this.board.lastPieceThatJumpped.id && execute ) {
+    //   this.board.turn -= 1;
+    // }
 
-    if (this.cellIsOccupied(destination) || piece.player.color !== this.board.players[this.board.turn % 2].color ) {
+    if ( !!this.board.lastPieceThatJumpped && this.board.lastPieceThatJumpped !== piece ) {
       return false
     }
+
+    if (this.cellIsOccupied(destination) || piece.player.color !== this.board.turn) {
+      return false
+    }
+
 
     var leftColumn = (piece.cell.id - 1) % 8 === 0
     var rightColumn = (piece.cell.id + 2) % 8 === 0
@@ -77,13 +91,19 @@ export default class Checkers {
       case 'down':
         if  ( downLeft ) {
           if ( this.board.cells[piece.cell.id + 9].piece !== null && this.board.cells[piece.cell.id + 9].piece.player.color !== piece.player.color) {
-            this.removeJumpedPiece(9,piece)
+            if ( execute ) {
+
+              this.removeJumpedPiece(9,piece)
+            }
             return true
           }
         }
         else if ( downRight ) {
           if ( this.board.cells[piece.cell.id + 7].piece !== null && this.board.cells[piece.cell.id + 7].piece.player.color !== piece.player.color) {
-            this.removeJumpedPiece(7,piece)
+            if ( execute ) {
+
+              this.removeJumpedPiece(7,piece)
+            }
             return true
           }
         }
@@ -94,13 +114,17 @@ export default class Checkers {
       case 'up':
       if  ( upLeft ) {
         if ( this.board.cells[piece.cell.id - 9].piece !== null && this.board.cells[piece.cell.id - 9].piece.player.color !== piece.player.color) {
-          this.removeJumpedPiece(-9,piece)
+          if ( execute ) {
+            this.removeJumpedPiece(-9,piece)
+          }
           return true
         }
       }
       else if ( upRight ) {
         if ( this.board.cells[piece.cell.id - 7].piece !== null && this.board.cells[piece.cell.id - 7].piece.player.color !== piece.player.color) {
-          this.removeJumpedPiece(-7,piece)
+          if ( execute ) {
+            this.removeJumpedPiece(-7,piece)
+          }
           return true
         }
       }
@@ -111,25 +135,33 @@ export default class Checkers {
       case 'upanddown':
       if  ( upLeft ) {
         if ( this.board.cells[piece.cell.id - 9].piece !== null && this.board.cells[piece.cell.id - 9].piece.player.color !== piece.player.color) {
-          this.removeJumpedPiece(-9,piece)
+          if ( execute ) {
+            this.removeJumpedPiece(-9,piece)
+          }
           return true
         }
       }
       else if ( upRight ) {
         if ( this.board.cells[piece.cell.id - 7].piece !== null && this.board.cells[piece.cell.id - 7].piece.player.color !== piece.player.color) {
-          this.removeJumpedPiece(-7,piece)
+          if ( execute ) {
+            this.removeJumpedPiece(-7,piece)
+          }
           return true
         }
       }
       else if  ( downLeft ) {
         if ( this.board.cells[piece.cell.id + 9].piece !== null && this.board.cells[piece.cell.id + 9].piece.player.color !== piece.player.color) {
-          this.removeJumpedPiece(9,piece)
+          if ( execute ) {
+            this.removeJumpedPiece(9,piece)
+          }
           return true
         }
       }
       else if ( downRight ) {
         if ( this.board.cells[piece.cell.id + 7].piece !== null && this.board.cells[piece.cell.id + 7].piece.player.color !== piece.player.color) {
-          this.removeJumpedPiece(7,piece)
+          if ( execute ) {
+            this.removeJumpedPiece(7,piece)
+          }
           return true
         }
       }
@@ -153,28 +185,20 @@ export default class Checkers {
   }
 
   removeJumpedPiece(direction,piece) {
-    this.board.turn += 1;
     this.board.lastPieceThatJumpped = piece;
-
-    if ( this.board.cells[piece.cell.id + direction].piece && this.board.cells[piece.cell.id + direction].piece.king ) {
-      if ( this.board.cells[piece.cell.id + direction].piece.player.color === 'blue' ) {
-        $('#blue-pieces').append(`<div id='${this.board.cells[piece.cell.id + direction].piece.id}' class='piece king-blue'></div>`)
-      }
-      else {
-        $('#red-pieces').append(`<div id='${this.board.cells[piece.cell.id + direction].piece.id}' class='piece king-red'></div>`)
-      }
-    }
-    else {
-      if ( this.board.cells[piece.cell.id + direction].piece.player.color === 'blue' ) {
-        $('#blue-pieces').append(`<div id='${this.board.cells[piece.cell.id + direction].piece.id}' class='piece piece-blue'></div>`)
-      }
-      else {
-        $('#red-pieces').append(`<div id='${this.board.cells[piece.cell.id + direction].piece.id}' class='piece piece-red'></div>`)
-      }
-    }
     this.board.cells[piece.cell.id + direction].removePiece()
+  }
 
-    this.board.checkEndOfGame()
-
+  checkJumpAgain( piece ) {
+    let canJumpAgain = false
+    for (var i = 0; i < this.board.cells.length; i++) {
+      if ( this.board.game.validJump(this.board.cells[i], piece, false) ) {
+        canJumpAgain = true
+      }
+    }
+    if (!canJumpAgain) {
+      this.board.lastPieceThatJumpped = null
+    }
+    return canJumpAgain
   }
 }

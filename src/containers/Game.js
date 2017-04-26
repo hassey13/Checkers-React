@@ -13,7 +13,9 @@ class Game extends Component {
 
     this.state = {
       board: null,
-      piece: null
+      piece: null,
+      turn: 'blue',
+      highlightedCells: []
     }
   }
 
@@ -35,13 +37,28 @@ class Game extends Component {
 
   onCellClick( cell ) {
     if ( this.state.piece ) {
-      this.state.board.status( this.state.piece, cell )
-      this.setState( { piece: null } )
+        this.state.board.status( this.state.piece, cell )
+        this.setState( {
+          piece: null,
+          highlightedCells: []
+        } )
+
     }
+    this.state.board.checkEndOfGame()
   }
 
   onPieceClick( piece ) {
-    this.setState( { piece: piece } )
+    let cells = this.state.board.cells
+    let highlightedCells = []
+    for (var i = 0; i < cells.length; i++) {
+      if ( this.state.board.game.validMove(cells[i], piece, false) || this.state.board.game.validJump(cells[i], piece, false) ) {
+        highlightedCells.push( cells[i] )
+      }
+    }
+    this.setState( {
+      piece: piece,
+      highlightedCells: highlightedCells
+    } )
   }
 
   render() {
@@ -51,7 +68,8 @@ class Game extends Component {
         <GameBoard
           onPieceClick={ this.onPieceClick.bind( this ) }
           onCellClick={ this.onCellClick.bind( this ) }
-          cells={this.state.board.cells} />
+          cells={this.state.board.cells}
+          highlightedCells={this.state.highlightedCells} />
       </div>
     )
   }

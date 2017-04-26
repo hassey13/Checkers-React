@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Cell from './Cell'
+import { determineHighlight } from '../helpers/cell'
 
 const Board = ( props ) => (
   <div className='frame'>
@@ -9,6 +10,7 @@ const Board = ( props ) => (
           <Cell key={ i }
             onCellClick={ props.onCellClick}
             onPieceClick={ props.onPieceClick}
+            highlight={ determineHighlight( props.highlightedCells, cell )  }
             {...cell} />
         ) ) }
     </div>

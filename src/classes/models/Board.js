@@ -7,7 +7,7 @@ export default class Board {
     this.cells = []
     this.generateGrid()
     this.players = []
-    this.turn = 0
+    this.turn = 'blue'
     this.lastPieceThatJumpped = null
   }
 
@@ -19,17 +19,6 @@ export default class Board {
     for (let i = 0; i < this.size * this.size ; i++) {
       this.cells.push(new Cell(i))
     }
-  }
-
-  findPiece(element) {
-    var id = element[0].getAttribute('id').split('-')
-    var playerObject = null
-    for ( let player in this.players) {
-      if (id[0] === this.players[player].color) {
-        playerObject = this.players[player]
-      }
-    }
-    return playerObject.pieces[id[1]]
   }
 
   placePieces() {
@@ -62,13 +51,22 @@ export default class Board {
   }
 
   status(piece, cell) {
-    var objCell = this.cells[cell.id]
-    if (this.game.validMove(objCell, piece) || this.game.validJump(objCell, piece)) {
+    let objCell = this.cells[cell.id]
+    let wasAJump = this.game.validJump(objCell, piece, false)
+
+
+    if (this.game.validMove(objCell, piece, true) || this.game.validJump(objCell, piece, true)) {
       this.game.move(objCell, piece)
+
+      if ( wasAJump ) {
+        if ( !this.game.checkJumpAgain( piece ) ) {
+            this.game.board.turn = this.game.board.turn === 'blue' ? 'red' : 'blue';
+          }
+        }
+      }
+
       return true
     }
-
-  }
 
   checkEndOfGame() {
     if (this.players[0].activePieceCount() === 0) {
@@ -81,8 +79,9 @@ export default class Board {
   }
 
   announceWinner(player) {
-    alert(`GameOver! ${player.name} Wins!`)
+    setTimeout( () => {
+      alert(`GameOver! ${player.name} Wins!`)
+    }, 500)
   }
-
 
 }
