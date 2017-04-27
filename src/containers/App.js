@@ -5,17 +5,27 @@ import UserMenu from '../components/UserMenu'
 import Invites from '../components/Invites'
 import Game from './Game'
 
+const io = require('socket.io-client')
+
 class App extends Component {
   constructor() {
     super()
 
     this.state = {
-      user: null,
+      socket: null,
+      user: "Eric",
       showUserMenu: true,
       showInvites: false,
       invites: [],
       content: ''
     }
+  }
+
+  componentWillMount() {
+    const socket = io.connect('http://localhost:4000')
+    this.setState({
+      socket: socket
+    })
   }
 
   toggleUserMenu() {
@@ -77,7 +87,10 @@ class App extends Component {
           invites={ this.state.invites }
           onDismiss={ this.dismissInvites.bind( this ) }
           />
-        <Game />
+        <Game
+          socket={ this.state.socket }
+          user={ this.state.user }
+        />
       </div>
     )
   }

@@ -26,6 +26,7 @@ class Game extends Component {
       winner: null,
       highlightedCells: []
     }
+    this.socketUpdateBoard = this.socketUpdateBoard.bind( this )
   }
 
   componentWillMount() {
@@ -41,6 +42,25 @@ class Game extends Component {
     this.setState( {
       board: board
     } )
+
+    if ( this.props.socket ) {
+      this.props.socket.on('move', this.socketUpdateBoard  )
+    }
+  }
+
+  socketUpdateBoard( move ) {
+    if ( move.user !== this.props.user ) {
+
+      let piece = this.state.board.findPieceByIdAndColor( move.piece.id, move.piece.color )
+      let cell = this.state.board.findCellById( move.cell )
+
+      let board = this.state.board
+      board.status( piece, cell )
+      this.setState({
+        board: board,
+        winner: board.checkEndOfGame()
+      })
+    }
   }
 
   updateBoard() {
@@ -91,6 +111,16 @@ class Game extends Component {
   onCellClick( cell ) {
     if ( this.state.piece ) {
         this.state.board.status( this.state.piece, cell )
+
+        this.props.socket.emit('move', {
+          user: this.props.user,
+          piece: {
+            id: this.state.piece.id,
+            color: this.state.piece.player.color
+          },
+          cell: cell.id
+        } )
+
         this.setState( {
           piece: null,
           highlightedCells: [],
