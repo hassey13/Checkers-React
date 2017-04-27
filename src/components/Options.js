@@ -1,7 +1,7 @@
 import React from 'react'
 
 const Options = ( props ) => (
-  <div className='options' onClick={ props.onClick } >
+  <div className='options noselect' onClick={ props.onClick } >
     <div>Options</div>
   </div>
 )

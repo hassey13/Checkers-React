@@ -213,6 +213,195 @@ nav li {
   cursor: pointer;
 }
 
+.invites {
+  position: absolute;
+  z-index: 1000;
+  margin-left: calc( 50% - 105px );
+  margin-top: 150px;
+  border-radius: 10px;
+
+  width: 200px;
+  padding: 5px 5px 25px 5px;
+  text-align: center;
+  font-family: arial;
+  font-size: 0.8em;
+  color: #fff;
+  background-color: #2A2A2A;
+
+  -webkit-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+}
+
+.invites-title {
+  padding: 10px;
+  font-size: 1.2em;
+}
+
+.invites-list {
+  padding: 10px;
+  font-size: 1em;
+}
+
+.invites-option {
+  margin: 5px;
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.invites-option:hover {
+  background-color: #2A98FF;
+  border: 1px solid black;
+}
+
+.invites-dismiss {
+  position: absolute;
+  margin: -8px -8px 0 0;
+  right: 0;
+  top: 0;
+  background-color: red;
+  color: #fff;
+  font-family: arial;
+  font-weight: bold;
+  font-size: 1em;
+  padding: 4px 7px 3px 7px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.invites-dismiss:hover {
+  background-color: #fff;
+  color: red;
+}
+
+.hide {
+  display: none;
+}
+
+.sessions {
+  z-index: 1001;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px 10px 0 0;
+  padding: 0 0 0 0;
+  height: 50px;
+  width: 50px;
+  border: 1px solid #2A2A2A;
+  border-radius: 25px;
+  background-color: #5D5D5D;
+  color: #dcdcdc;
+  font-family: arial;
+  font-weight: bold;
+  font-size: 44px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.user-menu {
+  z-index: 100;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px 10px 0 0;
+  padding: 10px 0 0px 15px;
+  width: 150px;
+  border-radius: 25px;
+  background-color: #4B4B4B;
+  color: #dcdcdc;
+  font-family: arial;
+  font-size: 0.8em;
+  -webkit-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+}
+
+.user-menu-button-container {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.username-font {
+  margin-left: 10px;
+}
+
+.user-menu-button {
+  margin: 5px 25px 0px 10px;
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.user-menu-button:hover {
+  background-color: #2A98FF;
+}
+
+.username-label {
+  margin: 25px 0px 0px 30px;
+  padding: 10px;
+  color: #dcdcdc;
+  font-family: arial;
+  font-size: 0.8em;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.login-input {
+  margin: 5px 25px 0px 5px;
+  width: 100px;
+  padding: 10px;
+  border: 1px solid #dcdcdc;
+  background-color: #4B4B4B;
+  color: #dcdcdc;
+  font-family: arial;
+  font-size: 1em;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.login-submit {
+  margin: 10px 0px 0px 40px;
+  width: 50px;
+  padding: 5px;
+  border: 1px solid #dcdcdc;
+  background-color: #4B4B4B;
+  color: #dcdcdc;
+  font-family: arial;
+  font-size: 0.8em;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.login-submit:hover {
+  background-color: #2A98FF;
+}
+
+.fine-print {
+  margin-left: 20px;
+  padding-top: 5px;
+  font-family: arial;
+  letter-spacing: 1px;
+  font-size: 0.6em;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
+
 .menu {
   position: absolute;
   z-index: 1000;
@@ -269,10 +458,4 @@ nav li {
 .menu-dismiss:hover {
   background-color: #fff;
   color: red;
-}
-
-
-
-.hide {
-  display: none;
 }
