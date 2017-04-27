@@ -70,18 +70,12 @@ export default class Board {
 
   checkEndOfGame() {
     if (this.players[0].activePieceCount() === 0) {
-      this.announceWinner(this.players[1])
+      return this.players[1].name
     }
     else if (this.players[1].activePieceCount() === 0) {
-      this.announceWinner(this.players[0])
+      return this.players[0].name
     }
-    return false
-  }
-
-  announceWinner(player) {
-    setTimeout( () => {
-      alert(`GameOver! ${player.name} Wins!`)
-    }, 500)
+    return null
   }
 
 }
