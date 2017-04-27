@@ -50,6 +50,15 @@ export default class Board {
     }
   }
 
+  findPieceByIdAndColor( id, color ) {
+    let player = color === 'blue' ? this.players[0] : this.players[1]
+    return player.pieces[ id - 1 ]
+  }
+
+  findCellById( id ) {
+    return this.cells[ id ]
+  }
+
   status(piece, cell) {
     let objCell = this.cells[cell.id]
     let wasAJump = this.game.validJump(objCell, piece, false)
