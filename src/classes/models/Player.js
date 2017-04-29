@@ -1,13 +1,18 @@
 import Piece from './Piece.js'
 
 export default class Player {
-  constructor(color, name, board) {
+  constructor(color, name, board, username = null) {
+    this.username = username
     this.color = color
     this.name = name
     this.pieces = this.generatePieces()
     this.board = board
   }
-  
+
+  addUsername( username ) {
+    this.username = username
+  }
+
   generatePieces() {
     let piecesContainer = []
     while ( piecesContainer.length < 12 ) {

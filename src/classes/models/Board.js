@@ -2,6 +2,7 @@ import Cell from './Cell.js'
 
 export default class Board {
   constructor(game = 'Checkers') {
+    this.id = null
     this.size = 8
     this.game = game
     this.cells = []
@@ -9,6 +10,7 @@ export default class Board {
     this.players = []
     this.turn = 'blue'
     this.lastPieceThatJumpped = null
+    this.winner = null
   }
 
   addPlayers(playerOne, playerTwo) {
@@ -79,9 +81,11 @@ export default class Board {
 
   checkEndOfGame() {
     if (this.players[0].activePieceCount() === 0) {
+      this.winner = this.players[1].name
       return this.players[1].name
     }
     else if (this.players[1].activePieceCount() === 0) {
+      this.winner = this.players[0].name
       return this.players[0].name
     }
     return null
