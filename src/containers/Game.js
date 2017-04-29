@@ -22,7 +22,7 @@ class Game extends Component {
       piece: null,
       showMenu: false,
       showRules: false,
-      turn: 'blue',
+      turn: '',
       winner: null,
       highlightedCells: []
     }
@@ -34,13 +34,14 @@ class Game extends Component {
     let board = new Board(game)
     game.addBoard(board)
 
-    let playerOne = new Player('blue', "Blue", board)
+    let playerOne = new Player('blue', "Blue", board, this.props.user)
     let playerTwo = new Player('red', "Red" , board)
     board.addPlayers( playerOne , playerTwo )
     board.placePieces()
 
     this.setState( {
-      board: board
+      board: board,
+      turn: board.turn
     } )
 
     if ( this.props.socket ) {
@@ -63,6 +64,43 @@ class Game extends Component {
     }
   }
 
+  loadBoard( id ) {
+
+    //call for board from server
+
+    // let boardFromServer = this.props.axios.get(`/boards/${id}`)
+    //   .then( response => response )
+    //   .catch((error) => {
+    //       console.log('Failed to get board')
+    //       console.log(error)
+    //       return {error: error}
+    //     })
+
+    let game = new Checkers()
+    let board = new Board(game)
+    game.addBoard(board)
+
+    //set board properties
+
+    let playerOne = new Player('blue', "BLUE", board, )
+    let playerTwo = new Player('red', "RED" , board)
+    board.addPlayers( playerOne , playerTwo )
+
+    board.placePieces()
+
+    //custom function to modify pieces based off board from server
+
+    this.setState( {
+      board: board,
+      piece: null,
+      showMenu: false,
+      showRules: false,
+      turn: board.turn,
+      winner: board.winner,
+      highlightedCells: []
+    })
+  }
+
   updateBoard() {
     let game = new Checkers()
     let board = new Board(game)
@@ -78,8 +116,8 @@ class Game extends Component {
       piece: null,
       showMenu: false,
       showRules: false,
-      turn: 'blue',
-      winner: null,
+      turn: board.turn,
+      winner: board.winner,
       highlightedCells: []
     })
   }

@@ -2,14 +2,6 @@ import React, { Component } from 'react'
 
 class Menu extends Component {
 
-  constructor() {
-    super()
-
-    this.state = {
-      board: null
-    }
-  }
-
   startNewGame() {
     this.props.onDismiss()
     this.props.updateBoard()
