@@ -19,6 +19,7 @@ class App extends Component {
       user: null,
       showUserMenu: true,
       showInvites: false,
+      inviteContent: '',
       invites: [],
       content: ''
     }
@@ -56,6 +57,12 @@ class App extends Component {
     })
   }
 
+  onChangeInvite( event ) {
+    this.setState({
+      inviteContent: event.target.value
+    })
+  }
+
   onLogout( event ) {
     this.setState({
       user: null,
@@ -90,11 +97,37 @@ class App extends Component {
               })
             })
             .catch((error) => {
-                console.warn('Could not create user either! =(')
-                console.log(error)
+                console.error('Could not create user either! =(')
+                console.error(error)
                 return {error: error}
             })
         })
+  }
+
+  onSubmitInvite( event ) {
+    event.preventDefault()
+
+    if ( !this.state.user ) {
+      console.error('You must login to invite someone')
+      return
+    }
+
+    let credentials = {
+      challenger: this.state.user,
+      challengee: this.state.inviteContent
+    }
+
+    axios.post('/boards', credentials)
+      .then( response => {
+        this.setState({
+          invites: [...this.state.invites, { challenger: credentials.challenger, challengee: credentials.challengee, accepted: false, pending: true } ],
+          showUserMenu: true,
+          inviteContent: ''
+        })
+      })
+      .catch((error) => {
+        console.error('Failed to start match!')
+      })
   }
 
   render() {
@@ -118,6 +151,9 @@ class App extends Component {
         <Invites
           show={ this.state.showInvites }
           invites={ this.state.invites }
+          content={ this.state.inviteContent }
+          onSubmit={ this.onSubmitInvite.bind( this ) }
+          onChange={ this.onChangeInvite.bind( this ) }
           onDismiss={ this.dismissInvites.bind( this ) }
           />
         <Game

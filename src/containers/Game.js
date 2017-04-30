@@ -186,7 +186,10 @@ class Game extends Component {
 
     return (
       <div>
-        <PlayerBar board={ this.state.board } />
+        <PlayerBar
+          board={ this.state.board }
+          user={ this.props.user } 
+          />
         <Options onClick={ this.onOptionsClick.bind( this ) } />
         <Menu
           show={ this.state.showMenu }
