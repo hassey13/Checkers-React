@@ -23,6 +23,7 @@ class App extends Component {
       invites: [],
       content: ''
     }
+    this.updateNotification = this.updateNotification.bind( this )
   }
 
   componentWillMount() {
@@ -31,6 +32,15 @@ class App extends Component {
       socket: socket,
       axios: axios
     })
+    socket.on('invite', this.updateNotification  )
+  }
+
+  updateNotification( invite ) {
+    if (invite.challengee === this.state.user) {
+      this.setState({
+        invites: [...this.state.invites, invite]
+      })
+    }
   }
 
   toggleUserMenu() {
@@ -119,6 +129,7 @@ class App extends Component {
 
     axios.post('/boards', credentials)
       .then( response => {
+        credentials.boardId = response.data.board._id.toString()
         this.setState({
           invites: [...this.state.invites, { challenger: credentials.challenger, challengee: credentials.challengee, accepted: false, pending: true } ],
           showUserMenu: true,
@@ -128,6 +139,8 @@ class App extends Component {
       .catch((error) => {
         console.error('Failed to start match!')
       })
+
+    this.state.socket.emit('invite', credentials )
   }
 
   render() {
