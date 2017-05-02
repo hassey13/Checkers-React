@@ -4,12 +4,7 @@ class Menu extends Component {
 
   startNewGame() {
     this.props.onDismiss()
-    this.props.updateBoard()
-  }
-
-  loadGame() {
-    this.props.onDismiss()
-    this.props.updateBoard()
+    this.props.newBoard()
   }
 
   listRules() {
@@ -18,6 +13,7 @@ class Menu extends Component {
   }
 
   resignGame() {
+    console.warn('Resignation coming soon, for now stick it out!')
     this.props.onDismiss()
   }
 
@@ -30,7 +26,7 @@ class Menu extends Component {
         <div className='menu-dismiss' onClick={ this.props.onDismiss } >X</div>
         <div className='menu-title'>Menu</div>
         <div className='menu-option' onClick={ this.startNewGame.bind( this ) }>New Game</div>
-        <div className='menu-option' onClick={ this.loadGame.bind( this ) }>Continue Game</div>
+        <div className='menu-option' onClick={ this.props.continueGame }>Continue Game</div>
         <div className='menu-option' onClick={ this.listRules.bind( this ) }>Rules</div>
         <div className='menu-option' onClick={ this.resignGame.bind( this ) }>Resign</div>
       </div>
