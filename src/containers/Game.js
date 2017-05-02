@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 
+import GamesMenu from '../components/GamesMenu'
 import GameBoard from '../components/Board'
 import PlayerBar from '../components/PlayerBar'
 import Options from '../components/Options'
@@ -19,15 +20,18 @@ class Game extends Component {
 
     this.state = {
       session: Math.random() * 1000000000,
+      games: [],
+      selectedGame: null,
       board: null,
       piece: null,
       showMenu: false,
+      showGamesMenu: false,
       showRules: false,
       turn: '',
       winner: null,
       highlightedCells: []
     }
-    this.socketUpdateBoard = this.socketUpdateBoard.bind( this )
+    this.socketUpdateBoard = this.socketUpdateBoard.bind(this)
   }
 
   componentWillMount() {
@@ -41,8 +45,7 @@ class Game extends Component {
     board.placePieces()
 
     this.setState( {
-      board: board,
-      turn: board.turn
+      board: board
     } )
 
     if ( this.props.socket ) {
@@ -73,7 +76,28 @@ class Game extends Component {
     }
   }
 
+  newBoard() {
+    let game = new Checkers()
+    let board = new Board(game)
+    game.addBoard(board)
+
+    let player = this.props.user ? this.props.user : null
+
+    let playerOne = new Player('blue', "Blue", board, player)
+    let playerTwo = new Player('red', "Red" , board)
+    board.addPlayers( playerOne , playerTwo )
+    board.placePieces()
+
+    this.setState( {
+      board: board
+    })
+  }
+
   loadBoard( id ) {
+
+    if ( !!id ) {
+      id = this.state.selectedGame._id
+    }
 
     let game = new Checkers()
     let board = new Board(game)
@@ -120,28 +144,32 @@ class Game extends Component {
         console.log(error)
         return {error: error}
       })
+  }
 
+  handleContinueGame() {
+    // get games from server
 
+    if ( this.props.user === null ) {
+      console.warn('Must be logged in to continue game!')
+      return
+    }
+
+    this.props.axios(`/boards/users/${this.props.user}`)
+      .then( (response) => {
+        let games = response.data.filter( (game, i) => game.accepted || !game.pending )
+
+        this.setState({
+          games: games,
+          showMenu: false,
+          showGamesMenu: true
+        })
+      })
 
   }
 
-  updateBoard() {
-    let game = new Checkers()
-    let board = new Board(game)
-    game.addBoard(board)
-
-    let playerOne = new Player('blue', "BLUE", board)
-    let playerTwo = new Player('red', "RED" , board)
-    board.addPlayers( playerOne , playerTwo )
-    board.placePieces()
-
-    this.setState( {
-      board: board,
-      piece: null,
-      showMenu: false,
-      showRules: false,
-      winner: board.winner,
-      highlightedCells: []
+  handleSelectGame( board ) {
+    this.setState({
+      selectedGame: board
     })
   }
 
@@ -154,6 +182,12 @@ class Game extends Component {
   dismissMenu() {
     this.setState( {
       showMenu: false
+    })
+  }
+
+  dismissGamesMenu() {
+    this.setState( {
+      showGamesMenu: false
     })
   }
 
@@ -224,7 +258,18 @@ class Game extends Component {
           show={ this.state.showMenu }
           onDismiss={ this.dismissMenu.bind( this ) }
           showRules={ this.showRules.bind( this ) }
-          updateBoard={ this.updateBoard.bind( this ) }
+          newBoard={ this.newBoard.bind( this ) }
+          loadBoard={ this.loadBoard.bind( this ) }
+          continueGame={ this.handleContinueGame.bind( this ) }
+        />
+        <GamesMenu
+          show={ this.state.showGamesMenu }
+          user={ this.props.user }
+          selectedGame={ this.state.selectedGame }
+          handleSelectGame={ this.handleSelectGame.bind( this ) }
+          onDismiss={ this.dismissGamesMenu.bind( this ) }
+          games={ this.state.games }
+          loadBoard={ this.loadBoard.bind( this ) }
         />
         <Rules show={ this.state.showRules } onDismiss={ this.dismissRules.bind( this ) } />
         <Winner

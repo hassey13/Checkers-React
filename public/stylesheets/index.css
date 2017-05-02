@@ -612,3 +612,43 @@ nav li {
 .no-border {
   border: none !important;
 }
+
+.games-menu {
+  position: absolute;
+  z-index: 1000;
+  margin-left: calc( 50% - 155px );
+  margin-top: 100px;
+  border-radius: 10px;
+
+  width: 300px;
+  padding: 5px;
+  text-align: center;
+  font-family: arial;
+  font-size: 0.8em;
+  color: #fff;
+  background-color: #2A2A2A;
+
+  -webkit-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+}
+
+.games-menu-title {
+  padding: 10px;
+  font-size: 1.2em;
+}
+
+.games-menu-content {
+  padding: 25px;
+  font-size: 1em;
+}
+
+.game-item {
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.selected {
+  background-color: #2A98FF;
+}
