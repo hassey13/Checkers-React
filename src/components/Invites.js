@@ -6,10 +6,6 @@ const Invites = ( props ) => {
 
   let className = !!props.show ? 'invites' : 'hide'
 
-  // let loggedIn = !!props.user ? 'user-menu-button-container' : 'hide'
-  // let showLoginForm = !!props.user ? 'hide' : 'login-form'
-  // let finePrint = !!props.user ? '' : "You don't have to signup"
-
   return (
     <div className={ className }>
       <div className='invites-dismiss' onClick={ props.onDismiss } >X</div>
@@ -18,8 +14,9 @@ const Invites = ( props ) => {
         { props.invites.length > 0 ? props.invites.map( (invite, i) => (
           <Invite
             key={i}
-            challenger={ invite.challenger }
-            challengee={ invite.challengee }
+            ownInvite={ props.user === invite.challenger }
+            onSubmit={ props.onSubmitPendingInvite }
+            invite={ invite }
             accepted={ invite.accepted }
             pending={ invite.pending }
             />

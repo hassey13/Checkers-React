@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 
 import Sessions from '../components/Sessions'
+import PopupNotification from '../components/PopupNotification'
 import UserMenu from '../components/UserMenu'
 import Invites from '../components/Invites'
 import Game from './Game'
@@ -19,11 +20,15 @@ class App extends Component {
       user: null,
       showUserMenu: true,
       showInvites: false,
+      loadBoard: null,
       inviteContent: '',
       invites: [],
+      notifications: 0,
+      popupNotificationContent: null,
       content: ''
     }
     this.updateNotification = this.updateNotification.bind( this )
+    this.handleAcceptedInvite = this.handleAcceptedInvite.bind( this )
   }
 
   componentWillMount() {
@@ -33,12 +38,39 @@ class App extends Component {
       axios: axios
     })
     socket.on('invite', this.updateNotification  )
+    socket.on('acceptedInvite', this.handleAcceptedInvite  )
   }
 
   updateNotification( invite ) {
     if (invite.challengee === this.state.user) {
       this.setState({
-        invites: [...this.state.invites, invite]
+        invites: [...this.state.invites, invite],
+        notifications: this.state.notifications + 1
+      })
+    }
+  }
+
+  dismissPopupNotification() {
+    this.setState({
+      popupNotificationContent: null
+    })
+  }
+
+  loadBoard() {
+    this.setState({
+      loadBoard: this.state.popupNotificationContent.boardId
+    })
+    this.dismissPopupNotification()
+    this.dismissInvites()
+  }
+
+  handleAcceptedInvite( acceptedInvite ) {
+    if (acceptedInvite.challenger === this.state.user) {
+      let invites = this.state.invites.filter( (invite) => invite.boardId !== acceptedInvite.boardId )
+
+      this.setState({
+        invites: invites,
+        popupNotificationContent: acceptedInvite
       })
     }
   }
@@ -77,7 +109,39 @@ class App extends Component {
     this.setState({
       user: null,
       showUserMenu: false,
-      showInvites: false
+      showInvites: false,
+      invites: [],
+      notifications: 0
+    })
+  }
+
+  onSubmitPendingInvite( event, boardId, action ) {
+    event.preventDefault()
+    let invites = this.state.invites.filter( (invite) => invite.boardId !== boardId )
+    let invite = this.state.invites.filter( (invite) => invite.boardId === boardId )[0]
+
+
+    if ( action === 'accept') {
+      invite.accepted = true
+      invite.pending = false
+      this.setState({
+        showInvites: false,
+        loadBoard: boardId,
+        invites: invites
+      })
+      this.state.socket.emit('acceptedInvite', invite )
+    }
+    else {
+      this.setState({
+        invites: invites
+      })
+    }
+
+  }
+
+  loadedBoard() {
+    this.setState({
+      loadBoard: null
     })
   }
 
@@ -131,16 +195,17 @@ class App extends Component {
       .then( response => {
         credentials.boardId = response.data.board._id.toString()
         this.setState({
-          invites: [...this.state.invites, { challenger: credentials.challenger, challengee: credentials.challengee, accepted: false, pending: true } ],
+          invites: [...this.state.invites, { ...credentials, accepted: false, pending: true } ],
           showUserMenu: true,
           inviteContent: ''
         })
+        console.log(credentials)
+        this.state.socket.emit('invite', credentials )
       })
       .catch((error) => {
         console.error('Failed to start match!')
       })
 
-    this.state.socket.emit('invite', credentials )
   }
 
   render() {
@@ -152,6 +217,11 @@ class App extends Component {
     return (
       <div>
         <Sessions user={ this.state.user } onClick={ this.toggleUserMenu.bind( this )} />
+        <PopupNotification
+          content={ this.state.popupNotificationContent }
+          onDismiss={ this.dismissPopupNotification.bind( this )}
+          loadBoard={ this.loadBoard.bind( this )}
+        />
         <UserMenu
           show={ this.state.showUserMenu }
           user={ this.state.user }
@@ -163,16 +233,20 @@ class App extends Component {
         />
         <Invites
           show={ this.state.showInvites }
+          user={ this.state.user }
           invites={ this.state.invites }
           content={ this.state.inviteContent }
           onSubmit={ this.onSubmitInvite.bind( this ) }
           onChange={ this.onChangeInvite.bind( this ) }
           onDismiss={ this.dismissInvites.bind( this ) }
+          onSubmitPendingInvite={ this.onSubmitPendingInvite.bind( this ) }
           />
         <Game
           axios={ this.state.axios }
           socket={ this.state.socket }
           user={ this.state.user }
+          loadBoard={ this.state.loadBoard }
+          loadedBoard={ this.loadedBoard.bind( this ) }
         />
       </div>
     )
