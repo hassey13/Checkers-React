@@ -18,6 +18,7 @@ class Game extends Component {
     super()
 
     this.state = {
+      session: Math.random() * 1000000000,
       board: null,
       piece: null,
       showMenu: false,
@@ -47,10 +48,18 @@ class Game extends Component {
     if ( this.props.socket ) {
       this.props.socket.on('move', this.socketUpdateBoard  )
     }
+
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if ( !!nextProps.loadBoard ) {
+      this.loadBoard( nextProps.loadBoard )
+      this.props.loadedBoard()
+    }
   }
 
   socketUpdateBoard( move ) {
-    if ( move.user !== this.props.user ) {
+    if ( move.boardId === this.state.board.id && this.state.session !== move.session ) {
 
       let piece = this.state.board.findPieceByIdAndColor( move.piece.id, move.piece.color )
       let cell = this.state.board.findCellById( move.cell )
@@ -66,39 +75,54 @@ class Game extends Component {
 
   loadBoard( id ) {
 
-    //call for board from server
-
-    // let boardFromServer = this.props.axios.get(`/boards/${id}`)
-    //   .then( response => response )
-    //   .catch((error) => {
-    //       console.log('Failed to get board')
-    //       console.log(error)
-    //       return {error: error}
-    //     })
-
     let game = new Checkers()
     let board = new Board(game)
     game.addBoard(board)
 
-    //set board properties
+    let playerOne
+    let playerTwo
 
-    let playerOne = new Player('blue', "BLUE", board, )
-    let playerTwo = new Player('red', "RED" , board)
-    board.addPlayers( playerOne , playerTwo )
+    //call for board from server
+    this.props.axios.get(`/boards/${id}`)
+      .then( response => {
 
-    board.placePieces()
+        new Promise( (resolve, reject) => {
+          let boardFromServer = response.data[0]
+          board.id = boardFromServer._id.toString()
+          playerOne = new Player('blue', "BLUE", board, boardFromServer.players[0].username )
+          playerTwo = new Player('red', "RED" , board, boardFromServer.players[1].username )
 
-    //custom function to modify pieces based off board from server
+          board.addPlayers( playerOne , playerTwo )
 
-    this.setState( {
-      board: board,
-      piece: null,
-      showMenu: false,
-      showRules: false,
-      turn: board.turn,
-      winner: board.winner,
-      highlightedCells: []
-    })
+          board.placePieces()
+          //custom function to modify pieces based off board from server
+
+          setInterval( () => {
+            if ( board.players[1].pieces.length === 12 ) {
+              resolve()
+            }
+          },10)
+        })
+        .then( () => {
+          this.setState( {
+            board: board,
+            piece: null,
+            showMenu: false,
+            showRules: false,
+            turn: board.turn,
+            winner: board.winner,
+            highlightedCells: []
+          })
+        })
+      })
+      .catch((error) => {
+        console.error('Failed to start game')
+        console.log(error)
+        return {error: error}
+      })
+
+
+
   }
 
   updateBoard() {
@@ -116,7 +140,6 @@ class Game extends Component {
       piece: null,
       showMenu: false,
       showRules: false,
-      turn: board.turn,
       winner: board.winner,
       highlightedCells: []
     })
@@ -146,11 +169,17 @@ class Game extends Component {
     })
   }
 
+  playersTurn( board, user ) {
+    return ( (board.turn === board.players[0].color && board.players[0].username === user) || (board.turn === board.players[1].color && board.players[1].username === user) )
+  }
+
   onCellClick( cell ) {
-    if ( this.state.piece ) {
+    if ( this.state.piece && this.playersTurn( this.state.board, this.props.user ) ) {
         this.state.board.status( this.state.piece, cell )
 
         this.props.socket.emit('move', {
+          session: this.state.session,
+          boardId: this.state.board.id,
           user: this.props.user,
           piece: {
             id: this.state.piece.id,
@@ -188,7 +217,7 @@ class Game extends Component {
       <div>
         <PlayerBar
           board={ this.state.board }
-          user={ this.props.user } 
+          user={ this.props.user }
           />
         <Options onClick={ this.onOptionsClick.bind( this ) } />
         <Menu
@@ -198,7 +227,9 @@ class Game extends Component {
           updateBoard={ this.updateBoard.bind( this ) }
         />
         <Rules show={ this.state.showRules } onDismiss={ this.dismissRules.bind( this ) } />
-        <Winner winner={ this.state.winner } />
+        <Winner
+          winner={ this.state.winner }
+          board={ this.state.board } />
         <GameBoard
           onPieceClick={ this.onPieceClick.bind( this ) }
           onCellClick={ this.onCellClick.bind( this ) }

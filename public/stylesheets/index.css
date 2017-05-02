@@ -217,7 +217,7 @@ nav li {
   position: absolute;
   z-index: 1000;
   margin-left: calc( 50% - 105px );
-  margin-top: 150px;
+  margin-top: 200px;
   border-radius: 10px;
 
   width: 200px;
@@ -468,6 +468,13 @@ nav li {
   padding-top: 20px;
 }
 
+.invite {
+  padding: 0 0 10px 0;
+  margin-bottom: 5px;
+  border: 1px solid #4b4b4b;
+  border-radius: 5px;
+}
+
 .invite-input {
   margin: 5px 25px 0px 15px;
   width: 100px;
@@ -500,6 +507,51 @@ nav li {
   background-color: #2A98FF;
 }
 
+.invite-ar-form {
+  width: 30%;
+  float: left;
+  text-align: left;
+  margin: 0 -30px 0 30px;
+}
+
+.invite-accept {
+  margin: 0 0px 0px 0px;
+  width: 50px;
+  padding: 5px;
+  border: 1px solid #dcdcdc;
+  background-color: #4B4B4B;
+  color: #dcdcdc;
+  font-family: arial;
+  font-size: 0.8em;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.invite-accept:hover {
+  background-color: green;
+  color: #fff;
+}
+
+.invite-reject {
+  margin: 0 0px 0px 10px;
+  width: 50px;
+  padding: 5px;
+  border: 1px solid #dcdcdc;
+  background-color: #4B4B4B;
+  color: #dcdcdc;
+  font-family: arial;
+  font-size: 0.8em;
+  border-radius: 5px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.invite-reject:hover {
+  background-color: red;
+  color: #fff;
+}
+
 .invite-label {
   margin: 25px 0px 0px -20px;
   padding: 10px;
@@ -509,4 +561,54 @@ nav li {
   border-radius: 5px;
   text-align: center;
   cursor: pointer;
+}
+
+.popup-notification {
+  position: absolute;
+  z-index: 1000;
+  margin-left: calc( 50% - 105px );
+  margin-top: 100px;
+  border-radius: 10px;
+
+  width: 200px;
+  padding: 5px;
+  text-align: center;
+  font-family: arial;
+  font-size: 0.8em;
+  color: #fff;
+  background-color: #2A2A2A;
+
+  -webkit-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+  box-shadow: 0px 6px 36px 0px rgba(0,0,0,0.75);
+}
+
+.popup-notification-dismiss {
+  position: absolute;
+  margin: -5px -5px 0 0;
+  right: 0;
+  top: 0;
+  background-color: red;
+  color: #fff;
+  font-family: arial;
+  font-weight: bold;
+  font-size: 1em;
+  padding: 4px 7px 3px 7px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.popup-notification-dismiss:hover {
+  background-color: #fff;
+  color: red;
+}
+
+
+.clear {
+  clear: both;
+  padding: 5px;
+}
+
+.no-border {
+  border: none !important;
 }
