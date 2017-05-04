@@ -10,7 +10,7 @@ const io = require('socket.io-client')
 
 import axios from 'axios'
 // axios.defaults.baseURL = 'http://localhost:4000/api'
-axios.defaults.baseURL = 'http://www.react-checkers-server.herokuapp.com'
+axios.defaults.baseURL = 'http://www.react-checkers-server.herokuapp.com/api'
 
 class App extends Component {
   constructor() {
@@ -41,6 +41,11 @@ class App extends Component {
     })
     socket.on('invite', this.updateNotification  )
     socket.on('acceptedInvite', this.handleAcceptedInvite  )
+
+    axios.get(`/boards/${this.state.user}`)
+      .then( ( response ) => {
+        console.log(response.data)
+      })
   }
 
   updateNotification( invite ) {
@@ -129,7 +134,8 @@ class App extends Component {
       this.setState({
         showInvites: false,
         loadBoard: boardId,
-        invites: invites
+        invites: invites,
+        notifications: this.state.notifications - 1
       })
       this.state.socket.emit('acceptedInvite', invite )
       this.state.axios.post(`/boards/${boardId}`, { accepted: true } )
@@ -138,7 +144,8 @@ class App extends Component {
     else {
       console.warn('Don\'t hate just play! Coming soon invite rejections.')
       this.setState({
-        invites: invites
+        invites: invites,
+        notifications: this.state.notifications - 1
       })
     }
   }
@@ -220,7 +227,10 @@ class App extends Component {
 
     return (
       <div>
-        <Sessions user={ this.state.user } onClick={ this.toggleUserMenu.bind( this )} />
+        <Sessions
+          user={ this.state.user }
+          notifications={ this.state.notifications }
+          onClick={ this.toggleUserMenu.bind( this )} />
         <PopupNotification
           content={ this.state.popupNotificationContent }
           onDismiss={ this.dismissPopupNotification.bind( this )}
@@ -229,6 +239,7 @@ class App extends Component {
         <UserMenu
           show={ this.state.showUserMenu }
           user={ this.state.user }
+          notifications={ this.state.notifications }
           showInvites={ this.showInvites.bind( this )}
           onLogout={ this.onLogout.bind( this )}
           onSubmit={ this.onSubmit.bind( this )}

@@ -1,5 +1,7 @@
 import React from 'react'
 
+import NotificationAlert from './NotificationAlert'
+
 const UserMenu = ( props ) => {
 
   let user = !!props.user ? props.user : 'Not Logged In'
@@ -18,6 +20,7 @@ const UserMenu = ( props ) => {
       <div className={ loggedIn }>
         <div className='user-menu-button' onClick={ props.showInvites }>
           Invites
+          <NotificationAlert number={ props.notifications } invites={ true } />
         </div>
         <div className='user-menu-button' onClick={ props.onLogout }>
           Logout
