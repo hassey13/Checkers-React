@@ -10,7 +10,7 @@ const io = require('socket.io-client')
 
 import axios from 'axios'
 // axios.defaults.baseURL = 'http://localhost:4000/api'
-axios.defaults.baseURL = 'http://www.react-checkers-server.herokuapp.com/api'
+axios.defaults.baseURL = 'https://www.react-checkers-server.herokuapp.com/api'
 
 class App extends Component {
   constructor() {
@@ -42,10 +42,10 @@ class App extends Component {
     socket.on('invite', this.updateNotification  )
     socket.on('acceptedInvite', this.handleAcceptedInvite  )
 
-    axios.get(`/boards/${this.state.user}`)
-      .then( ( response ) => {
-        console.log(response.data)
-      })
+    // axios.get(`/boards/${this.state.user}`)
+    //   .then( ( response ) => {
+    //     console.log(response.data)
+    //   })
   }
 
   updateNotification( invite ) {
