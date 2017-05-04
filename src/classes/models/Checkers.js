@@ -66,10 +66,6 @@ export default class Checkers {
   }
 
   validJump(destination, piece, execute) {
-    // if (this.board.lastPieceThatJumpped !== null && piece.player.color === this.board.lastPieceThatJumpped.player.color && piece.id === this.board.lastPieceThatJumpped.id && execute ) {
-    //   this.board.turn -= 1;
-    // }
-
     if ( !!this.board.lastPieceThatJumpped && this.board.lastPieceThatJumpped !== piece ) {
       return false
     }

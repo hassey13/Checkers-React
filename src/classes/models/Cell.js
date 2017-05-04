@@ -24,7 +24,9 @@ export default class Cell {
   }
 
   removePiece() {
-    this.piece.removeCell()
+    if ( !!this.piece ) {
+      this.piece.removeCell()
+    }
     this.piece = null
   }
 

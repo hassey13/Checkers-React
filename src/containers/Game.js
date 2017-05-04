@@ -94,9 +94,8 @@ class Game extends Component {
   }
 
   loadBoard( id ) {
-
-    if ( !!id ) {
-      id = this.state.selectedGame._id
+    if ( !id || typeof id !== 'string' ) {
+      id = this.state.selectedGame._id.toString()
     }
 
     let game = new Checkers()
@@ -106,20 +105,41 @@ class Game extends Component {
     let playerOne
     let playerTwo
 
-    //call for board from server
     this.props.axios.get(`/boards/${id}`)
       .then( response => {
 
         new Promise( (resolve, reject) => {
           let boardFromServer = response.data[0]
           board.id = boardFromServer._id.toString()
+          board.turn = boardFromServer.turn
           playerOne = new Player('blue', "BLUE", board, boardFromServer.players[0].username )
           playerTwo = new Player('red', "RED" , board, boardFromServer.players[1].username )
 
           board.addPlayers( playerOne , playerTwo )
 
-          board.placePieces()
-          //custom function to modify pieces based off board from server
+          boardFromServer.pieces.forEach( (piece, i) => {
+            if ( piece.cellId !== null ) {
+              if ( piece.color === 'blue' ) {
+                let selectedPiece = board.players[0].pieces[piece.id-1]
+                selectedPiece.king = piece.king
+
+                // board.cells[piece.cellId].removePiece()
+                board.cells[piece.cellId].receivePiece(selectedPiece)
+                selectedPiece.receiveCell(board.cells[piece.cellId])
+              }
+              else {
+                let selectedPiece = board.players[1].pieces[piece.id-1]
+                selectedPiece.king = piece.king
+
+                // board.cells[piece.cellId].removePiece()
+                board.cells[piece.cellId].receivePiece(selectedPiece)
+                selectedPiece.receiveCell(board.cells[piece.cellId])
+              }
+            }
+            else {
+              //populate lost piece
+            }
+          })
 
           setInterval( () => {
             if ( board.players[1].pieces.length === 12 ) {
@@ -132,6 +152,7 @@ class Game extends Component {
             board: board,
             piece: null,
             showMenu: false,
+            showGamesMenu: false,
             showRules: false,
             turn: board.turn,
             winner: board.winner,
@@ -147,14 +168,12 @@ class Game extends Component {
   }
 
   handleContinueGame() {
-    // get games from server
-
     if ( this.props.user === null ) {
       console.warn('Must be logged in to continue game!')
       return
     }
 
-    this.props.axios(`/boards/users/${this.props.user}`)
+    this.props.axios.get(`/boards/users/${this.props.user}`)
       .then( (response) => {
         let games = response.data.filter( (game, i) => game.accepted || !game.pending )
 
@@ -164,7 +183,6 @@ class Game extends Component {
           showGamesMenu: true
         })
       })
-
   }
 
   handleSelectGame( board ) {
@@ -209,6 +227,18 @@ class Game extends Component {
 
   onCellClick( cell ) {
     if ( this.state.piece && this.playersTurn( this.state.board, this.props.user ) ) {
+
+        if ( this.state.board.game.validJump( cell, this.state.piece, false ) && !!this.state.board.id ) {
+          console.log('sent taken piece')
+          this.props.axios.post(`/boards/${this.state.board.id}`, {
+            piece: {
+              id: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
+              color: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
+              cellId: null
+            }
+          } )
+        }
+
         this.state.board.status( this.state.piece, cell )
 
         this.props.socket.emit('move', {
@@ -220,6 +250,16 @@ class Game extends Component {
             color: this.state.piece.player.color
           },
           cell: cell.id
+        } )
+
+        this.props.axios.post(`/boards/${this.state.board.id}`, {
+          turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
+          piece: {
+            id: this.state.piece.id,
+            color: this.state.piece.player.color,
+            king: this.state.piece.king,
+            cellId: this.state.piece.cell.id
+          }
         } )
 
         this.setState( {
