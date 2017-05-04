@@ -8,6 +8,7 @@ const Board = ( props ) => (
     <div className='container'>
       { props.cells.map( (cell, i) => (
           <Cell key={ i }
+            id={ i }
             onCellClick={ props.onCellClick}
             onPieceClick={ props.onPieceClick}
             highlight={ determineHighlight( props.highlightedCells, cell )  }

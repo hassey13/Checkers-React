@@ -130,8 +130,11 @@ class App extends Component {
         invites: invites
       })
       this.state.socket.emit('acceptedInvite', invite )
+      this.state.axios.post(`/boards/${boardId}`, { accepted: true } )
+      console.log(boardId)
     }
     else {
+      console.warn('Don\'t hate just play! Coming soon invite rejections.')
       this.setState({
         invites: invites
       })
@@ -199,11 +202,11 @@ class App extends Component {
           showUserMenu: true,
           inviteContent: ''
         })
-        console.log(credentials)
         this.state.socket.emit('invite', credentials )
       })
       .catch((error) => {
         console.error('Failed to start match!')
+        console.error(error)
       })
 
   }

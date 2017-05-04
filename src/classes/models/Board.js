@@ -24,7 +24,7 @@ export default class Board {
   }
 
   placePieces() {
-    var count = 0
+    let count = 0
     for (let i = 0; i < this.players[0].pieces.length * 2; i+=2) {
       if ( Math.floor(i / 8) % 2 === 0 ) {
         this.cells[i].receivePiece(this.players[0].pieces[count])

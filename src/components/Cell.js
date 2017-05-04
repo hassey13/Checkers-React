@@ -15,6 +15,7 @@ const Cell = ( props ) => {
   }
   return (
   <div className={className} onClick={ () => { props.onCellClick( props ) } } >
+
   </div>
 )}
 
