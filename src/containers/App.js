@@ -34,7 +34,7 @@ class App extends Component {
 
   componentWillMount() {
     // const socket = io.connect('http://localhost:4000')
-    const socket = io.connect('http://www.react-checkers-server.herokuapp.com')
+    const socket = io.connect('https://www.react-checkers-server.herokuapp.com')
     this.setState({
       socket: socket,
       axios: axios
