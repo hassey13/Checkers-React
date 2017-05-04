@@ -9,7 +9,8 @@ import Game from './Game'
 const io = require('socket.io-client')
 
 import axios from 'axios'
-axios.defaults.baseURL = 'http://localhost:4000/api'
+// axios.defaults.baseURL = 'http://localhost:4000/api'
+axios.defaults.baseURL = 'https://www.react-checkers-server.herokuapp.com'
 
 class App extends Component {
   constructor() {
@@ -32,7 +33,8 @@ class App extends Component {
   }
 
   componentWillMount() {
-    const socket = io.connect('http://localhost:4000')
+    // const socket = io.connect('http://localhost:4000')
+    const socket = io.connect('https://www.react-checkers-server.herokuapp.com')
     this.setState({
       socket: socket,
       axios: axios
