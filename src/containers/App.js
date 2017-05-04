@@ -141,7 +141,6 @@ class App extends Component {
         invites: invites
       })
     }
-
   }
 
   loadedBoard() {
