@@ -229,14 +229,16 @@ class Game extends Component {
     if ( this.state.piece && this.playersTurn( this.state.board, this.props.user ) ) {
 
         if ( this.state.board.game.validJump( cell, this.state.piece, false ) && !!this.state.board.id ) {
-          console.log('sent taken piece')
-          this.props.axios.post(`/boards/${this.state.board.id}`, {
-            piece: {
-              id: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
-              color: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
-              cellId: null
-            }
-          } )
+
+          if ( this.state.board.id ) {
+            this.props.axios.post(`/boards/${this.state.board.id}`, {
+              piece: {
+                id: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
+                color: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
+                cellId: null
+              }
+            } )
+          }
         }
 
         this.state.board.status( this.state.piece, cell )
@@ -252,15 +254,17 @@ class Game extends Component {
           cell: cell.id
         } )
 
-        this.props.axios.post(`/boards/${this.state.board.id}`, {
-          turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
-          piece: {
-            id: this.state.piece.id,
-            color: this.state.piece.player.color,
-            king: this.state.piece.king,
-            cellId: this.state.piece.cell.id
-          }
-        } )
+        if ( this.state.board.id ) {
+          this.props.axios.post(`/boards/${this.state.board.id}`, {
+            turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
+            piece: {
+              id: this.state.piece.id,
+              color: this.state.piece.player.color,
+              king: this.state.piece.king,
+              cellId: this.state.piece.cell.id
+            }
+          } )
+        }
 
         this.setState( {
           piece: null,

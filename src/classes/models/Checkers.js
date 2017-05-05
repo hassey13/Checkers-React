@@ -14,17 +14,27 @@ export default class Checkers {
       return false
     }
 
+    for (let i = 0; i < this.board.cells.length; i++) {
+      for (let p = 0; p < piece.player.pieces.length; p++) {
+        if ( piece.player.pieces[p].cell ) {
+          if ( this.board.game.validJump( this.board.cells[i] , piece.player.pieces[p],  false )  ) {
+            return false
+          }
+        }
+      }
+    }
+
     if (this.cellIsOccupied(destination) || piece.player.color !== this.board.turn ) {
       return false
     }
 
-    var leftColumn = piece.cell.id % 8 === 0
-    var rightColumn = (piece.cell.id + 1) % 8 === 0
+    let leftColumn = piece.cell.id % 8 === 0
+    let rightColumn = (piece.cell.id + 1) % 8 === 0
 
-    var upLeft = (destination.id === piece.cell.id - 9) && !leftColumn
-    var upRight = (destination.id === piece.cell.id - 7) &&  !rightColumn
-    var downLeft = (destination.id === piece.cell.id + 9) && !rightColumn
-    var downRight = (destination.id === piece.cell.id + 7) && !leftColumn
+    let upLeft = (destination.id === piece.cell.id - 9) && !leftColumn
+    let upRight = (destination.id === piece.cell.id - 7) &&  !rightColumn
+    let downLeft = (destination.id === piece.cell.id + 9) && !rightColumn
+    let downRight = (destination.id === piece.cell.id + 7) && !leftColumn
 
     switch (piece.direction) {
       case 'down':
