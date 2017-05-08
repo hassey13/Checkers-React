@@ -11,7 +11,7 @@ const Rules = ( props ) => {
       <p>If one of your opponent’s checkers is on a forward diagonal next to one of your checkers, and the next space beyond the opponent’s checker is empty, then your checker must jump the opponent’s checker and land in the space beyond. Your opponent’s checker is captured and removed from the board. After making one jump, your checker might have another jump available from its new position. Your checker must take that jump too. It must continue to jump until there are no more jumps available. Both men and kings are allowed to make multiple jumps. If, at the start of a turn, more than one of your checkers has a jump available, then you may decide which one you will move. But once you have chosen one, it must take all the jumps that it can. </p>
       <p>When one of your checkers reaches the opposite side of the board, it is crowned and becomes a King. Your turn ends there. A King can move backward as well as forward along the diagonals. It can only move a distance of one space. A King can also jump backward and forward. It must jump when possible, and it must take all jumps that are available to it. In each jump, the King can only jump over one opposing piece at a time, and it must land in the space just beyond the captured piece. The King can not move multiple spaces before or after jumping a piece. </p>
       <p></p>
-      <p>You do not have to jump your opponent, unless there is an opportunity to make additional jumps after completing your first jump.</p>
+      <p>You have to jump your opponent.</p>
     </div>
   )
 }
