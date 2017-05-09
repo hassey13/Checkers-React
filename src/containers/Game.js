@@ -89,7 +89,8 @@ class Game extends Component {
     board.placePieces()
 
     this.setState( {
-      board: board
+      board: board,
+      winner: null
     })
   }
 
@@ -137,7 +138,7 @@ class Game extends Component {
               }
             }
             else {
-              //populate lost piece
+              //populate lost piece on side of game?
             }
           })
 
@@ -155,7 +156,7 @@ class Game extends Component {
             showGamesMenu: false,
             showRules: false,
             turn: board.turn,
-            winner: board.winner,
+            winner: board.checkEndOfGame(),
             highlightedCells: []
           })
         })
