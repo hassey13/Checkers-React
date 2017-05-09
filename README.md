@@ -2,4 +2,6 @@ A Remake of the classic board game.  Allows you do play a local head to head gam
 
 Standard checkers rules apply.
 
+Hosted on Heroku - https://react-checkers.herokuapp.com/
+
 Repo for server - https://github.com/hassey13/Checkers-Server
