@@ -34,12 +34,13 @@ class App extends Component {
 
   componentWillMount() {
     // const socket = io.connect('http://localhost:4000')
-    // const socket = io.connect('https://www.socket-test-checkers.herokuapp.com')
     const socket = io.connect('https://react-checkers-server.herokuapp.com')
+
     this.setState({
       socket: socket,
       axios: axios
     })
+
     socket.on('invite', this.updateNotification  )
     socket.on('acceptedInvite', this.handleAcceptedInvite  )
 
@@ -140,10 +141,10 @@ class App extends Component {
       })
       this.state.socket.emit('acceptedInvite', invite )
       this.state.axios.post(`/boards/${boardId}`, { accepted: true } )
-      console.log(boardId)
     }
     else {
-      console.warn('Don\'t hate just play! Coming soon invite rejections.')
+      this.state.axios.post(`/boards/${boardId}`, { accepted: false } )
+
       this.setState({
         invites: invites,
         notifications: this.state.notifications - 1
@@ -157,6 +158,7 @@ class App extends Component {
     })
   }
 
+  // Login
   onSubmit( event ) {
     event.preventDefault()
 
@@ -164,11 +166,30 @@ class App extends Component {
 
     axios.get(`/users/${credentials.username}`)
       .then( response => {
-        this.setState({
-          user: response.data.user.username,
-          showUserMenu: true,
-          content: ''
-        })
+        let username = response.data.user.username
+
+        axios.get(`/boards/users/${ username }`)
+          .then( response => {
+            let pendingGames = [];
+
+            for (let i = 0; i < response.data.length; i++) {
+              if ( response.data[i].pending ) {
+                response.data[i].boardId = response.data[i]._id
+                response.data[i].challenger = response.data[i].players[0].username
+                response.data[i].challengee = response.data[i].players[1].username
+                pendingGames.push( response.data[i] )
+              }
+            };
+
+            this.setState({
+              user: username,
+              showUserMenu: true,
+              invites: pendingGames,
+              notifications: pendingGames.length,
+              content: ''
+            });
+          });
+
       })
       .catch((error) => {
           console.warn('Failed to find user!')
