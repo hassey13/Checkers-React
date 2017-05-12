@@ -43,11 +43,6 @@ class App extends Component {
 
     socket.on('invite', this.updateNotification  )
     socket.on('acceptedInvite', this.handleAcceptedInvite  )
-
-    // axios.get(`/boards/${this.state.user}`)
-    //   .then( ( response ) => {
-    //     console.log(response.data)
-    //   })
   }
 
   updateNotification( invite ) {
