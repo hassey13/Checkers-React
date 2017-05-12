@@ -13,6 +13,8 @@ import Player from '../classes/models/Player.js'
 
 import Menu from './Menu'
 
+import { convertDate } from '../helpers/dateHelpers'
+
 class Game extends Component {
 
   constructor() {
@@ -20,12 +22,15 @@ class Game extends Component {
 
     this.state = {
       session: Math.random() * 1000000000,
-      games: [],
       selectedGame: null,
       board: null,
       piece: null,
       showMenu: false,
-      showGamesMenu: false,
+      gameMenu: {
+        show: false,
+        games: [],
+        submit: null
+      },
       showRules: false,
       turn: '',
       winner: null,
@@ -124,7 +129,6 @@ class Game extends Component {
                 let selectedPiece = board.players[0].pieces[piece.id-1]
                 selectedPiece.king = piece.king
 
-                // board.cells[piece.cellId].removePiece()
                 board.cells[piece.cellId].receivePiece(selectedPiece)
                 selectedPiece.receiveCell(board.cells[piece.cellId])
               }
@@ -132,7 +136,6 @@ class Game extends Component {
                 let selectedPiece = board.players[1].pieces[piece.id-1]
                 selectedPiece.king = piece.king
 
-                // board.cells[piece.cellId].removePiece()
                 board.cells[piece.cellId].receivePiece(selectedPiece)
                 selectedPiece.receiveCell(board.cells[piece.cellId])
               }
@@ -153,7 +156,11 @@ class Game extends Component {
             board: board,
             piece: null,
             showMenu: false,
-            showGamesMenu: false,
+            gameMenu: {
+              show: false,
+              games: [],
+              submit: null
+            },
             showRules: false,
             turn: board.turn,
             winner: board.checkEndOfGame(),
@@ -179,9 +186,29 @@ class Game extends Component {
         let games = response.data.filter( (game, i) => game.accepted || !game.pending )
 
         this.setState({
-          games: games,
           showMenu: false,
-          showGamesMenu: true
+          gameMenu: {
+            show: true,
+            games: games,
+            submit: this.loadBoard.bind( this )
+          }
+        })
+      })
+  }
+
+  handleSpectateGame() {
+    let date = convertDate( new Date() )
+    this.props.axios.get(`/boards/query/lastUpdated=${ date }`)
+      .then( (response) => {
+        let games = response.data.filter( (game, i) => game.accepted || !game.pending )
+
+        this.setState({
+          showMenu: false,
+          gameMenu: {
+            show: true,
+            games: games,
+            submit: this.loadBoard.bind( this )
+          }
         })
       })
   }
@@ -306,15 +333,16 @@ class Game extends Component {
           newBoard={ this.newBoard.bind( this ) }
           loadBoard={ this.loadBoard.bind( this ) }
           continueGame={ this.handleContinueGame.bind( this ) }
+          spectateGame={ this.handleSpectateGame.bind( this ) }
         />
         <GamesMenu
-          show={ this.state.showGamesMenu }
+          show={ this.state.gameMenu.show }
           user={ this.props.user }
           selectedGame={ this.state.selectedGame }
           handleSelectGame={ this.handleSelectGame.bind( this ) }
           onDismiss={ this.dismissGamesMenu.bind( this ) }
-          games={ this.state.games }
-          loadBoard={ this.loadBoard.bind( this ) }
+          games={ this.state.gameMenu.games }
+          onSubmit={ this.state.gameMenu.submit }
         />
         <Rules show={ this.state.showRules } onDismiss={ this.dismissRules.bind( this ) } />
         <Winner

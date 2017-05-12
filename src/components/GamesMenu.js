@@ -37,7 +37,7 @@ const GamesMenu = ( props ) => {
         }
       </div>
 
-      <div className='menu-option' onClick={ props.loadBoard }>
+      <div className='menu-option' onClick={ props.onSubmit }>
         Load Game
       </div>
     </div>
