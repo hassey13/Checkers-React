@@ -232,8 +232,9 @@ class Game extends Component {
   }
 
   dismissGamesMenu() {
+    let gameMenu = Object.assign({}, this.state.gameMenu, { show: false })
     this.setState( {
-      showGamesMenu: false
+      gameMenu: gameMenu
     })
   }
 
