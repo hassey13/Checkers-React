@@ -37,6 +37,7 @@ class Game extends Component {
       highlightedCells: []
     }
     this.socketUpdateBoard = this.socketUpdateBoard.bind(this)
+    this.socketUpdateBoardWithResignation = this.socketUpdateBoardWithResignation.bind(this)
   }
 
   componentWillMount() {
@@ -55,6 +56,7 @@ class Game extends Component {
 
     if ( this.props.socket ) {
       this.props.socket.on('move', this.socketUpdateBoard  )
+      this.props.socket.on('resign', this.socketUpdateBoardWithResignation  )
     }
 
   }
@@ -77,6 +79,15 @@ class Game extends Component {
       this.setState({
         board: board,
         winner: board.checkEndOfGame()
+      })
+    }
+  }
+
+  socketUpdateBoardWithResignation( resignation ) {
+    if ( resignation.boardId === this.state.board.id && this.state.session !== resignation.session ) {
+
+      this.setState({
+        winner: resignation.winner
       })
     }
   }
@@ -118,10 +129,13 @@ class Game extends Component {
           let boardFromServer = response.data[0]
           board.id = boardFromServer._id.toString()
           board.turn = boardFromServer.turn
+
           playerOne = new Player('blue', "BLUE", board, boardFromServer.players[0].username )
           playerTwo = new Player('red', "RED" , board, boardFromServer.players[1].username )
 
           board.addPlayers( playerOne , playerTwo )
+
+          board.winner = boardFromServer.winner !== '' ? (boardFromServer.winner === board.players[0].username ? "BLUE" : "RED") : boardFromServer.winner
 
           boardFromServer.pieces.forEach( (piece, i) => {
             if ( piece.cellId !== null ) {
@@ -163,7 +177,7 @@ class Game extends Component {
             },
             showRules: false,
             turn: board.turn,
-            winner: board.checkEndOfGame(),
+            winner: board.winner !== '' ? board.winner : board.checkEndOfGame(),
             highlightedCells: []
           })
         })
@@ -211,6 +225,19 @@ class Game extends Component {
           }
         })
       })
+  }
+
+  handleResignGame( winner ) {
+    this.props.axios.post(`/boards/${this.state.board.id}`, { winner: winner === "BLUE" ? this.state.board.players[0].username : this.state.board.players[1].username } );
+    this.props.socket.emit('resign', {
+      session: this.state.session,
+      boardId: this.state.board.id,
+      winner: winner
+    } )
+
+    this.setState({
+      winner: winner
+    });
   }
 
   handleSelectGame( board ) {
@@ -328,13 +355,16 @@ class Game extends Component {
           />
         <Options onClick={ this.onOptionsClick.bind( this ) } />
         <Menu
+          board={ this.state.board }
+          user={ this.props.user }
           show={ this.state.showMenu }
           onDismiss={ this.dismissMenu.bind( this ) }
           showRules={ this.showRules.bind( this ) }
           newBoard={ this.newBoard.bind( this ) }
           loadBoard={ this.loadBoard.bind( this ) }
-          continueGame={ this.handleContinueGame.bind( this ) }
-          spectateGame={ this.handleSpectateGame.bind( this ) }
+          handleContinueGame={ this.handleContinueGame.bind( this ) }
+          handleSpectateGame={ this.handleSpectateGame.bind( this ) }
+          handleResignGame={ this.handleResignGame.bind( this ) }
         />
         <GamesMenu
           show={ this.state.gameMenu.show }

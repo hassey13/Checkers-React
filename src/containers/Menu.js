@@ -13,12 +13,17 @@ class Menu extends Component {
   }
 
   resignGame() {
-    console.warn('Resignation coming soon, for now stick it out!')
+    if ( this.props.board.players[0].username === this.props.user ) {
+      this.props.handleResignGame('RED')
+    }
+    else if ( this.props.board.players[1].username === this.props.user ) {
+      this.props.handleResignGame('BLUE')
+    }
+
     this.props.onDismiss()
   }
 
   render() {
-
     let className = this.props.show ? 'menu' : 'hide'
 
     return (
@@ -26,8 +31,8 @@ class Menu extends Component {
         <div className='menu-dismiss' onClick={ this.props.onDismiss } >X</div>
         <div className='menu-title'>Menu</div>
         <div className='menu-option' onClick={ this.startNewGame.bind( this ) }>New Game</div>
-        <div className='menu-option' onClick={ this.props.continueGame }>Continue Game</div>
-        <div className='menu-option' onClick={ this.props.spectateGame }>Spectate Game</div>
+        <div className='menu-option' onClick={ this.props.handleContinueGame }>Continue Game</div>
+        <div className='menu-option' onClick={ this.props.handleSpectateGame }>Spectate Game</div>
         <div className='menu-option' onClick={ this.listRules.bind( this ) }>Rules</div>
         <div className='menu-option' onClick={ this.resignGame.bind( this ) }>Resign</div>
       </div>
