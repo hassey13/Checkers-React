@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Game = ( props ) => {
+const Match = ( props ) => {
 
   let opponent = props.players[0].username === props.user ? props.players[1].username : props.players[0].username
   let divClass = props.selected ? 'game-item selected' : 'game-item'
@@ -12,4 +12,4 @@ const Game = ( props ) => {
   )
 }
 
-export default Game
+export default Match

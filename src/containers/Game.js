@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 
 import GamesMenu from '../components/GamesMenu'
 import GameBoard from '../components/Board'
@@ -7,9 +8,9 @@ import Options from '../components/Options'
 import Rules from '../components/Rules'
 import Winner from '../components/Winner'
 
-import Checkers from '../classes/models/Checkers.js'
-import Board from '../classes/models/Board.js'
-import Player from '../classes/models/Player.js'
+import Checkers from '../classes/Checkers.js'
+import Board from '../classes/Board.js'
+import Player from '../classes/Player.js'
 
 import Menu from './Menu'
 
@@ -41,11 +42,12 @@ class Game extends Component {
   }
 
   componentWillMount() {
+    // let user = this.props.user.length ? this.props.user.username : null
     let game = new Checkers()
     let board = new Board(game)
     game.addBoard(board)
 
-    let playerOne = new Player('blue', "Blue", board, this.props.user)
+    let playerOne = new Player('blue', "Blue", board, null)
     let playerTwo = new Player('red', "Red" , board)
     board.addPlayers( playerOne , playerTwo )
     board.placePieces()
@@ -97,7 +99,7 @@ class Game extends Component {
     let board = new Board(game)
     game.addBoard(board)
 
-    let player = this.props.user ? this.props.user : null
+    let player = this.props.user.length ? this.props.user.username : null
 
     let playerOne = new Player('blue', "Blue", board, player)
     let playerTwo = new Player('red', "Red" , board)
@@ -190,12 +192,12 @@ class Game extends Component {
   }
 
   handleContinueGame() {
-    if ( this.props.user === null ) {
+    if ( this.props.user.length ) {
       console.warn('Must be logged in to continue game!')
       return
     }
 
-    this.props.axios.get(`/boards/users/${this.props.user}`)
+    this.props.axios.get(`/boards/users/${this.props.user.username}`)
       .then( (response) => {
         let games = response.data.filter( (game, i) => game.accepted || !game.pending )
 
@@ -212,6 +214,7 @@ class Game extends Component {
 
   handleSpectateGame() {
     let date = convertDate( new Date() )
+    console.log( date )
     this.props.axios.get(`/boards/query/lastUpdated=${ date }`)
       .then( (response) => {
         let games = response.data.filter( (game, i) => game.accepted || !game.pending )
@@ -282,63 +285,65 @@ class Game extends Component {
   }
 
   onCellClick( cell ) {
-    if ( this.state.piece && this.playersTurn( this.state.board, this.props.user ) ) {
+    let username = this.props.user.length ? this.props.user.username : null
+    if ( this.state.piece && this.playersTurn( this.state.board, username ) ) {
 
-        if ( this.state.board.game.validJump( cell, this.state.piece, false ) && !!this.state.board.id ) {
-
-          if ( this.state.board.id ) {
-            this.props.axios.post(`/boards/${this.state.board.id}`, {
-              piece: {
-                id: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
-                color: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
-                cellId: null
-              }
-            } )
-          }
-        }
-
-        this.state.board.status( this.state.piece, cell )
-
-        this.props.socket.emit('move', {
-          session: this.state.session,
-          boardId: this.state.board.id,
-          user: this.props.user,
-          piece: {
-            id: this.state.piece.id,
-            color: this.state.piece.player.color
-          },
-          cell: cell.id
-        } )
+      if ( this.state.board.game.validJump( cell, this.state.piece, false ) && !!this.state.board.id ) {
 
         if ( this.state.board.id ) {
           this.props.axios.post(`/boards/${this.state.board.id}`, {
-            turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
             piece: {
-              id: this.state.piece.id,
-              color: this.state.piece.player.color,
-              king: this.state.piece.king,
-              cellId: this.state.piece.cell.id
+              id: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
+              color: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
+              cellId: null
             }
           } )
         }
+      }
 
-        this.setState( {
-          piece: null,
-          highlightedCells: [],
-          winner: this.state.board.checkEndOfGame()
+      this.state.board.status( this.state.piece, cell )
+
+      this.props.socket.emit('move', {
+        session: this.state.session,
+        boardId: this.state.board.id,
+        user: username,
+        piece: {
+          id: this.state.piece.id,
+          color: this.state.piece.player.color
+        },
+        cell: cell.id
+      } )
+
+      if ( this.state.board.id ) {
+        this.props.axios.post(`/boards/${this.state.board.id}`, {
+          turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
+          piece: {
+            id: this.state.piece.id,
+            color: this.state.piece.player.color,
+            king: this.state.piece.king,
+            cellId: this.state.piece.cell.id
+          }
         } )
+      }
 
+      this.setState( {
+        piece: null,
+        highlightedCells: [],
+        winner: this.state.board.checkEndOfGame()
+      } )
     }
   }
 
   onPieceClick( piece ) {
     let cells = this.state.board.cells
     let highlightedCells = []
-    for (var i = 0; i < cells.length; i++) {
+
+    for ( let i = 0; i < cells.length; i++ ) {
       if ( this.state.board.game.validMove(cells[i], piece, false) || this.state.board.game.validJump(cells[i], piece, false) ) {
         highlightedCells.push( cells[i] )
       }
     }
+
     this.setState( {
       piece: piece,
       highlightedCells: highlightedCells
@@ -388,5 +393,13 @@ class Game extends Component {
     )
   }
 }
+const mapStateToProps = (state) => {
+  return {
+    user: state.user
+  }
+}
 
-export default Game
+export default connect(
+  mapStateToProps,
+  null
+  )( Game )
