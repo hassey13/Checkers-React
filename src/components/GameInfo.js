@@ -2,6 +2,8 @@ import React from 'react'
 
 const GameInfo = ( props ) => {
 
+  if ( !('cells' in props.board) ) return ( <div> Initializing Game... </div> )
+
   if ( !props.board.id ) {
     return (
       <div className='game-info' >

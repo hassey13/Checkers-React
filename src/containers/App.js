@@ -22,7 +22,6 @@ class App extends Component {
 
     this.state = {
       socket: null,
-      user: null,
       showInvites: false,
       loadBoard: null,
       inviteContent: '',
@@ -167,6 +166,7 @@ class App extends Component {
   render() {
     const { actions } = this.props
     const user = 'username' in this.props.user ? this.props.user : null
+    const board = !!this.props.board && 'id' in this.props.board ? this.props.board : []
 
     // Handles init of component
     if ( !this.state.axios || !this.state.socket ) {
@@ -188,6 +188,7 @@ class App extends Component {
           user={ user }
           axios={ this.state.axios }
           socket={ this.state.socket }
+          board={ board }
           loadBoard={ this.state.loadBoard }
           loadedBoard={ this.loadedBoard.bind( this ) }
           />
@@ -213,7 +214,8 @@ class App extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    user: state.user
+    user: state.user,
+    board: state.board
   }
 }
 

@@ -2,6 +2,8 @@ import React from 'react'
 
 const TurnIndicator = ( props ) => {
 
+  if ( !('turn' in props.board) ) return (<div></div>);
+
   let player = props.board.turn === props.board.players[0].color ? props.board.players[0].username : props.board.players[1].username
 
   return (

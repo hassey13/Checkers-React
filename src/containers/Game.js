@@ -8,13 +8,11 @@ import Options from '../components/Options'
 import Rules from '../components/Rules'
 import Winner from '../components/Winner'
 
-import Checkers from '../classes/Checkers.js'
-import Board from '../classes/Board.js'
-import Player from '../classes/Player.js'
-
 import Menu from './Menu'
 
 import { convertDate } from '../helpers/dateHelpers'
+import { createBoard } from '../helpers/board'
+
 
 class Game extends Component {
 
@@ -24,7 +22,6 @@ class Game extends Component {
     this.state = {
       session: Math.random() * 1000000000,
       selectedGame: null,
-      board: null,
       piece: null,
       showMenu: false,
       gameMenu: {
@@ -33,7 +30,6 @@ class Game extends Component {
         submit: null
       },
       showRules: false,
-      turn: '',
       winner: null,
       highlightedCells: []
     }
@@ -42,19 +38,8 @@ class Game extends Component {
   }
 
   componentWillMount() {
-    // let user = this.props.user.length ? this.props.user.username : null
-    let game = new Checkers()
-    let board = new Board(game)
-    game.addBoard(board)
-
-    let playerOne = new Player('blue', "Blue", board, null)
-    let playerTwo = new Player('red', "Red" , board)
-    board.addPlayers( playerOne , playerTwo )
-    board.placePieces()
-
-    this.setState( {
-      board: board
-    } )
+    const board = createBoard()
+    this.props.actions.addBoard( board )
 
     if ( this.props.socket ) {
       this.props.socket.on('move', this.socketUpdateBoard  )
@@ -71,12 +56,12 @@ class Game extends Component {
   }
 
   socketUpdateBoard( move ) {
-    if ( move.boardId === this.state.board.id && this.state.session !== move.session ) {
+    if ( move.boardId === this.props.board.id && this.state.session !== move.session ) {
 
-      let piece = this.state.board.findPieceByIdAndColor( move.piece.id, move.piece.color )
-      let cell = this.state.board.findCellById( move.cell )
+      let piece = this.props.board.findPieceByIdAndColor( move.piece.id, move.piece.color )
+      let cell = this.props.board.findCellById( move.cell )
 
-      let board = this.state.board
+      let board = this.props.board
       board.status( piece, cell )
       this.setState({
         board: board,
@@ -86,7 +71,7 @@ class Game extends Component {
   }
 
   socketUpdateBoardWithResignation( resignation ) {
-    if ( resignation.boardId === this.state.board.id && this.state.session !== resignation.session ) {
+    if ( resignation.boardId === this.props.board.id && this.state.session !== resignation.session ) {
 
       this.setState({
         winner: resignation.winner
@@ -95,100 +80,84 @@ class Game extends Component {
   }
 
   newBoard() {
-    let game = new Checkers()
-    let board = new Board(game)
-    game.addBoard(board)
-
-    let player = this.props.user.length ? this.props.user.username : null
-
-    let playerOne = new Player('blue', "Blue", board, player)
-    let playerTwo = new Player('red', "Red" , board)
-    board.addPlayers( playerOne , playerTwo )
-    board.placePieces()
-
-    this.setState( {
-      board: board,
-      winner: null
-    })
+    const board = createBoard()
+    this.props.actions.addBoard( board )
   }
 
   loadBoard( id ) {
+
     if ( !id || typeof id !== 'string' ) {
       id = this.state.selectedGame._id.toString()
     }
+    
+    this.props.actions.loadBoard( id )
 
-    let game = new Checkers()
-    let board = new Board(game)
-    game.addBoard(board)
 
-    let playerOne
-    let playerTwo
-
-    this.props.axios.get(`/boards/${id}`)
-      .then( response => {
-
-        new Promise( (resolve, reject) => {
-          let boardFromServer = response.data[0]
-          board.id = boardFromServer._id.toString()
-          board.turn = boardFromServer.turn
-
-          playerOne = new Player('blue', "BLUE", board, boardFromServer.players[0].username )
-          playerTwo = new Player('red', "RED" , board, boardFromServer.players[1].username )
-
-          board.addPlayers( playerOne , playerTwo )
-
-          board.winner = boardFromServer.winner !== '' ? (boardFromServer.winner === board.players[0].username ? "BLUE" : "RED") : boardFromServer.winner
-
-          boardFromServer.pieces.forEach( (piece, i) => {
-            if ( piece.cellId !== null ) {
-              if ( piece.color === 'blue' ) {
-                let selectedPiece = board.players[0].pieces[piece.id-1]
-                selectedPiece.king = piece.king
-
-                board.cells[piece.cellId].receivePiece(selectedPiece)
-                selectedPiece.receiveCell(board.cells[piece.cellId])
-              }
-              else {
-                let selectedPiece = board.players[1].pieces[piece.id-1]
-                selectedPiece.king = piece.king
-
-                board.cells[piece.cellId].receivePiece(selectedPiece)
-                selectedPiece.receiveCell(board.cells[piece.cellId])
-              }
-            }
-            else {
-              //populate lost piece on side of game?
-            }
-          })
-
-          setInterval( () => {
-            if ( board.players[1].pieces.length === 12 ) {
-              resolve()
-            }
-          },10)
-        })
-        .then( () => {
-          this.setState( {
-            board: board,
-            piece: null,
-            showMenu: false,
-            gameMenu: {
-              show: false,
-              games: [],
-              submit: null
-            },
-            showRules: false,
-            turn: board.turn,
-            winner: board.winner !== '' ? board.winner : board.checkEndOfGame(),
-            highlightedCells: []
-          })
-        })
-      })
-      .catch((error) => {
-        console.error('Failed to start game')
-        console.log(error)
-        return {error: error}
-      })
+    // this.props.axios.get(`/boards/${id}`)
+    //   .then( response => {
+//
+        // new Promise( (resolve, reject) => {
+        //   let boardFromServer = response.data[0]
+        //   board.id = boardFromServer._id.toString()
+        //   board.turn = boardFromServer.turn
+        //
+        //   playerOne = new Player('blue', "BLUE", board, boardFromServer.players[0].username )
+        //   playerTwo = new Player('red', "RED" , board, boardFromServer.players[1].username )
+        //
+        //   board.addPlayers( playerOne , playerTwo )
+        //
+        //   board.winner = boardFromServer.winner !== '' ? (boardFromServer.winner === board.players[0].username ? "BLUE" : "RED") : boardFromServer.winner
+        //
+        //   boardFromServer.pieces.forEach( (piece, i) => {
+        //     if ( piece.cellId !== null ) {
+        //       if ( piece.color === 'blue' ) {
+        //         let selectedPiece = board.players[0].pieces[piece.id-1]
+        //         selectedPiece.king = piece.king
+        //
+        //         board.cells[piece.cellId].receivePiece(selectedPiece)
+        //         selectedPiece.receiveCell(board.cells[piece.cellId])
+        //       }
+        //       else {
+        //         let selectedPiece = board.players[1].pieces[piece.id-1]
+        //         selectedPiece.king = piece.king
+        //
+        //         board.cells[piece.cellId].receivePiece(selectedPiece)
+        //         selectedPiece.receiveCell(board.cells[piece.cellId])
+        //       }
+        //     }
+        //     else {
+        //       //populate lost piece on side of game?
+        //     }
+        //   })
+        //
+        //   setInterval( () => {
+        //     if ( board.players[1].pieces.length === 12 ) {
+        //       resolve()
+        //     }
+        //   },10)
+      //   })
+      //   .then( () => {
+      //     this.setState( {
+      //       board: board,
+      //       piece: null,
+      //       showMenu: false,
+      //       gameMenu: {
+      //         show: false,
+      //         games: [],
+      //         submit: null
+      //       },
+      //       showRules: false,
+      //       turn: board.turn,
+      //       winner: board.winner !== '' ? board.winner : board.checkEndOfGame(),
+      //       highlightedCells: []
+      //     })
+      //   })
+      // })
+      // .catch((error) => {
+      //   console.error('Failed to start game')
+      //   console.log(error)
+      //   return {error: error}
+      // })
   }
 
   handleContinueGame() {
@@ -231,10 +200,10 @@ class Game extends Component {
   }
 
   handleResignGame( winner ) {
-    this.props.axios.post(`/boards/${this.state.board.id}`, { winner: winner === "BLUE" ? this.state.board.players[0].username : this.state.board.players[1].username } );
+    this.props.axios.post(`/boards/${this.props.board.id}`, { winner: winner === "BLUE" ? this.props.board.players[0].username : this.props.board.players[1].username } );
     this.props.socket.emit('resign', {
       session: this.state.session,
-      boardId: this.state.board.id,
+      boardId: this.props.board.id,
       winner: winner
     } )
 
@@ -286,26 +255,26 @@ class Game extends Component {
 
   onCellClick( cell ) {
     let username = this.props.user.length ? this.props.user.username : null
-    if ( this.state.piece && this.playersTurn( this.state.board, username ) ) {
+    if ( this.state.piece && this.playersTurn( this.props.board, username ) ) {
 
-      if ( this.state.board.game.validJump( cell, this.state.piece, false ) && !!this.state.board.id ) {
+      if ( this.props.board.game.validJump( cell, this.state.piece, false ) && !!this.props.board.id ) {
 
-        if ( this.state.board.id ) {
-          this.props.axios.post(`/boards/${this.state.board.id}`, {
+        if ( this.props.board.id ) {
+          this.props.axios.post(`/boards/${this.props.board.id}`, {
             piece: {
-              id: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
-              color: this.state.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
+              id: this.props.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
+              color: this.props.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
               cellId: null
             }
           } )
         }
       }
 
-      this.state.board.status( this.state.piece, cell )
+      this.props.board.status( this.state.piece, cell )
 
       this.props.socket.emit('move', {
         session: this.state.session,
-        boardId: this.state.board.id,
+        boardId: this.props.board.id,
         user: username,
         piece: {
           id: this.state.piece.id,
@@ -314,8 +283,8 @@ class Game extends Component {
         cell: cell.id
       } )
 
-      if ( this.state.board.id ) {
-        this.props.axios.post(`/boards/${this.state.board.id}`, {
+      if ( this.props.board.id ) {
+        this.props.axios.post(`/boards/${this.props.board.id}`, {
           turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
           piece: {
             id: this.state.piece.id,
@@ -329,17 +298,17 @@ class Game extends Component {
       this.setState( {
         piece: null,
         highlightedCells: [],
-        winner: this.state.board.checkEndOfGame()
+        winner: this.props.board.checkEndOfGame()
       } )
     }
   }
 
   onPieceClick( piece ) {
-    let cells = this.state.board.cells
+    let cells = this.props.board.cells
     let highlightedCells = []
 
     for ( let i = 0; i < cells.length; i++ ) {
-      if ( this.state.board.game.validMove(cells[i], piece, false) || this.state.board.game.validJump(cells[i], piece, false) ) {
+      if ( this.props.board.game.validMove(cells[i], piece, false) || this.props.board.game.validJump(cells[i], piece, false) ) {
         highlightedCells.push( cells[i] )
       }
     }
@@ -355,12 +324,13 @@ class Game extends Component {
     return (
       <div>
         <PlayerBar
-          board={ this.state.board }
+          board={ this.props.board }
           user={ this.props.user }
           />
-        <Options onClick={ this.onOptionsClick.bind( this ) } />
+        <Options
+          onClick={ this.onOptionsClick.bind( this ) } />
         <Menu
-          board={ this.state.board }
+          board={ this.props.board }
           user={ this.props.user }
           show={ this.state.showMenu }
           onDismiss={ this.dismissMenu.bind( this ) }
@@ -380,14 +350,15 @@ class Game extends Component {
           games={ this.state.gameMenu.games }
           onSubmit={ this.state.gameMenu.submit }
         />
-        <Rules show={ this.state.showRules } onDismiss={ this.dismissRules.bind( this ) } />
+        <Rules
+          show={ this.state.showRules }
+          onDismiss={ this.dismissRules.bind( this ) } />
         <Winner
-          winner={ this.state.winner }
-          board={ this.state.board } />
+          board={ this.props.board } />
         <GameBoard
           onPieceClick={ this.onPieceClick.bind( this ) }
           onCellClick={ this.onCellClick.bind( this ) }
-          cells={this.state.board.cells}
+          board={this.props.board}
           highlightedCells={this.state.highlightedCells} />
       </div>
     )
