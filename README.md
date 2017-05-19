@@ -8,4 +8,4 @@ Repo for server - https://github.com/hassey13/Checkers-Server
 
 Trello link for upcoming features - https://trello.com/b/k7XxN4el/checkers
 
-Interesting experience to not use Redux to get a true feel for React but alas, as complexity grows Redux integration may be coming!
+Interesting experience to not use Redux to get a true feel for React but alas, as complexity grows Redux integration is coming! Status in refactor-prep branch
