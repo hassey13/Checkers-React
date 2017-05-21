@@ -89,22 +89,27 @@ class Game extends Component {
     if ( !id || typeof id !== 'string' ) {
       id = this.state.selectedGame._id.toString()
     }
-    
+
     this.props.actions.loadBoard( id )
+      .then( () => {
+        this.setState( {
+          highlightedCells: [],
+          piece: null,
+          showMenu: false,
+          gameMenu: {
+            show: false,
+            games: [],
+            submit: null
+          },
+          showRules: false
+        })
+      })
+      .catch((error) => {
+        console.error('Failed to start game')
+        console.log(error)
+        return {error: error}
+      })
 
-
-    // this.props.axios.get(`/boards/${id}`)
-    //   .then( response => {
-//
-        // new Promise( (resolve, reject) => {
-        //   let boardFromServer = response.data[0]
-        //   board.id = boardFromServer._id.toString()
-        //   board.turn = boardFromServer.turn
-        //
-        //   playerOne = new Player('blue', "BLUE", board, boardFromServer.players[0].username )
-        //   playerTwo = new Player('red', "RED" , board, boardFromServer.players[1].username )
-        //
-        //   board.addPlayers( playerOne , playerTwo )
         //
         //   board.winner = boardFromServer.winner !== '' ? (boardFromServer.winner === board.players[0].username ? "BLUE" : "RED") : boardFromServer.winner
         //
@@ -130,33 +135,7 @@ class Game extends Component {
         //     }
         //   })
         //
-        //   setInterval( () => {
-        //     if ( board.players[1].pieces.length === 12 ) {
-        //       resolve()
-        //     }
-        //   },10)
       //   })
-      //   .then( () => {
-      //     this.setState( {
-      //       board: board,
-      //       piece: null,
-      //       showMenu: false,
-      //       gameMenu: {
-      //         show: false,
-      //         games: [],
-      //         submit: null
-      //       },
-      //       showRules: false,
-      //       turn: board.turn,
-      //       winner: board.winner !== '' ? board.winner : board.checkEndOfGame(),
-      //       highlightedCells: []
-      //     })
-      //   })
-      // })
-      // .catch((error) => {
-      //   console.error('Failed to start game')
-      //   console.log(error)
-      //   return {error: error}
       // })
   }
 
