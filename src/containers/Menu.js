@@ -32,7 +32,7 @@ class Menu extends Component {
         <div className='menu-title'>Menu</div>
         <div className='menu-option' onClick={ this.startNewGame.bind( this ) }>New Game</div>
         <div className='menu-option' onClick={ this.props.handleContinueGame }>Continue Game</div>
-        <div className='menu-option' onClick={ this.props.handleSpectateGame }>Spectate Game</div>
+        <div className='menu-option' onClick={ this.props.listRecentGames }>Spectate Game</div>
         <div className='menu-option' onClick={ this.listRules.bind( this ) }>Rules</div>
         <div className='menu-option' onClick={ this.resignGame.bind( this ) }>Resign</div>
       </div>

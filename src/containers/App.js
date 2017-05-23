@@ -47,7 +47,10 @@ class App extends Component {
   }
 
   updateNotification( invite ) {
-    if ( this.props.user.length && invite.challengee === this.props.user.username) {
+    if ( this.props.user && 'username' in this.props.user && invite.challengee === this.props.user.username) {
+
+      this.props.actions.addInvite( invite )
+
       this.setState({
         invites: [...this.state.invites, invite],
         notifications: this.state.notifications + 1
@@ -97,6 +100,8 @@ class App extends Component {
     if ( this.props.user.length && acceptedInvite.challenger === this.props.user.username ) {
       let invites = this.state.invites.filter( (invite) => invite.boardId !== acceptedInvite.boardId )
 
+      //opens notification that it was accepted and allows board load
+
       this.setState({
         invites: invites,
         popupNotificationContent: acceptedInvite
@@ -135,37 +140,38 @@ class App extends Component {
 
 
   onSubmitInvite( event ) {
+    // let self = this
     event.preventDefault()
 
-    if ( !this.props.user.length ) {
+    if ( !(this.props.user && 'username' in this.props.user) ) {
       console.error('You must login to invite someone')
       return
     }
 
-    let credentials = {
-      challenger: this.state.user.username,
+    let invite = {
+      challenger: this.props.user.username,
       challengee: this.state.inviteContent
     }
 
-    axios.post('/boards', credentials)
-      .then( response => {
-        credentials.boardId = response.data.board._id.toString()
-        this.setState({
-          invites: [...this.state.invites, { ...credentials, accepted: false, pending: true } ],
-          showUserMenu: true,
-          inviteContent: ''
-        })
-        this.state.socket.emit('invite', credentials )
+    this.props.actions.inviteToGame( invite )
+      .then( ( action ) => {
+        // self.state.socket.emit('invite', action.payload )
       })
       .catch((error) => {
         console.error('Failed to start match!')
         console.error(error)
       })
+
+    this.setState({
+      showUserMenu: true,
+      inviteContent: ''
+    })
+
   }
 
   render() {
     const { actions } = this.props
-    const user = 'username' in this.props.user ? this.props.user : null
+    const user = this.props.user && 'username' in this.props.user ? this.props.user : null
     const board = !!this.props.board && 'id' in this.props.board ? this.props.board : []
 
     // Handles init of component
@@ -200,7 +206,7 @@ class App extends Component {
         <Invites
           show={ this.state.showInvites }
           user={ user }
-          invites={ this.state.invites }
+          invites={ this.props.invites }
           content={ this.state.inviteContent }
           onSubmit={ this.onSubmitInvite.bind( this ) }
           onChange={ this.onChangeInvite.bind( this ) }
@@ -215,6 +221,7 @@ class App extends Component {
 const mapStateToProps = (state) => {
   return {
     user: state.user,
+    invites: state.invites,
     board: state.board
   }
 }

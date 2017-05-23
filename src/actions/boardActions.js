@@ -3,6 +3,7 @@ import { createBoard } from '../helpers/board'
 
 const ADD_BOARD = 'ADD_BOARD'
 const LOAD_BOARD = 'LOAD_BOARD'
+const RESIGN_GAME = 'RESIGN_GAME'
 
 export const addBoard = ( board ) => {
 
@@ -28,11 +29,21 @@ export const loadBoard = ( boardId ) => {
       return createBoard( options )
     })
 
-
-
-
   return {
     type: LOAD_BOARD,
     payload: Board
+  }
+}
+
+export const resignGame = ( boardId, user ) => {
+
+  const Winner = boardAdapter.resignGame( boardId, user )
+    .then( response => {
+      debugger
+    })
+
+  return {
+    type: RESIGN_GAME,
+    payload: Winner
   }
 }

@@ -7,16 +7,16 @@ function processBoardProperty( property, value) {
   let board = this;
   switch ( property ) {
     case 'id':
-      this.id = value;
+      board.id = value;
       break;
 
     case 'turn':
-      this.turn = value;
+      board.turn = value;
       break;
 
     case 'winner':
       // fix winner so this sets properly
-      this.winner = value;
+      board.winner = value;
       break;
 
     case 'players':
@@ -63,10 +63,12 @@ export function createBoard( options ) {
   let playerTwo = new Player('red', "Red" , board)
   board.addPlayers( playerOne , playerTwo )
 
+  // Only place new pieces if its a brand new game
   if ( !options || !('pieces' in options) ) {
     board.placePieces()
   }
 
+  // Set up board with loaded configurations
   if ( !!options && typeof( options ) === 'object' ) {
     for (let key in options) {
       processBoardProperty.call( board , key, options[key] )

@@ -109,34 +109,6 @@ class Game extends Component {
         console.log(error)
         return {error: error}
       })
-
-        //
-        //   board.winner = boardFromServer.winner !== '' ? (boardFromServer.winner === board.players[0].username ? "BLUE" : "RED") : boardFromServer.winner
-        //
-        //   boardFromServer.pieces.forEach( (piece, i) => {
-        //     if ( piece.cellId !== null ) {
-        //       if ( piece.color === 'blue' ) {
-        //         let selectedPiece = board.players[0].pieces[piece.id-1]
-        //         selectedPiece.king = piece.king
-        //
-        //         board.cells[piece.cellId].receivePiece(selectedPiece)
-        //         selectedPiece.receiveCell(board.cells[piece.cellId])
-        //       }
-        //       else {
-        //         let selectedPiece = board.players[1].pieces[piece.id-1]
-        //         selectedPiece.king = piece.king
-        //
-        //         board.cells[piece.cellId].receivePiece(selectedPiece)
-        //         selectedPiece.receiveCell(board.cells[piece.cellId])
-        //       }
-        //     }
-        //     else {
-        //       //populate lost piece on side of game?
-        //     }
-        //   })
-        //
-      //   })
-      // })
   }
 
   handleContinueGame() {
@@ -160,7 +132,7 @@ class Game extends Component {
       })
   }
 
-  handleSpectateGame() {
+  listRecentGames() {
     let date = convertDate( new Date() )
     console.log( date )
     this.props.axios.get(`/boards/query/lastUpdated=${ date }`)
@@ -178,17 +150,31 @@ class Game extends Component {
       })
   }
 
-  handleResignGame( winner ) {
-    this.props.axios.post(`/boards/${this.props.board.id}`, { winner: winner === "BLUE" ? this.props.board.players[0].username : this.props.board.players[1].username } );
-    this.props.socket.emit('resign', {
-      session: this.state.session,
-      boardId: this.props.board.id,
-      winner: winner
-    } )
+  userIsPlayingInMatch( user, board ) {
+    for (let i = 0; i < board.players.length; i++) {
+      if ( board.players[i].username === user.username ) {
+        return true
+      }
+    }
+    return false
+  }
 
-    this.setState({
-      winner: winner
-    });
+  handleResignGame( winner ) {
+    let user = this.props.user;
+
+    if ( this.userIsPlayingInMatch( user, this.props.board ) ) {
+      this.props.actions.resignGame( this.props.board.id, user );
+
+      this.props.socket.emit('resign', {
+        session: this.state.session,
+        boardId: this.props.board.id,
+        winner: winner
+      } );
+    }
+    else {
+      console.log('Cannot resign in a match you are not playing in.')
+    }
+
   }
 
   handleSelectGame( board ) {
@@ -238,6 +224,7 @@ class Game extends Component {
 
       if ( this.props.board.game.validJump( cell, this.state.piece, false ) && !!this.props.board.id ) {
 
+        //send jumped piece to server
         if ( this.props.board.id ) {
           this.props.axios.post(`/boards/${this.props.board.id}`, {
             piece: {
@@ -249,8 +236,10 @@ class Game extends Component {
         }
       }
 
+      //update the local board
       this.props.board.status( this.state.piece, cell )
 
+      //emit the move to opponent
       this.props.socket.emit('move', {
         session: this.state.session,
         boardId: this.props.board.id,
@@ -262,6 +251,7 @@ class Game extends Component {
         cell: cell.id
       } )
 
+      //send moved piece to server
       if ( this.props.board.id ) {
         this.props.axios.post(`/boards/${this.props.board.id}`, {
           turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
@@ -283,6 +273,7 @@ class Game extends Component {
   }
 
   onPieceClick( piece ) {
+    //highlight possible moves
     let cells = this.props.board.cells
     let highlightedCells = []
 
@@ -317,7 +308,7 @@ class Game extends Component {
           newBoard={ this.newBoard.bind( this ) }
           loadBoard={ this.loadBoard.bind( this ) }
           handleContinueGame={ this.handleContinueGame.bind( this ) }
-          handleSpectateGame={ this.handleSpectateGame.bind( this ) }
+          listRecentGames={ this.listRecentGames.bind( this ) }
           handleResignGame={ this.handleResignGame.bind( this ) }
         />
         <GamesMenu
