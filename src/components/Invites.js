@@ -15,7 +15,7 @@ const Invites = ( props ) => {
           <Invite
             key={i}
             ownInvite={ props.user.username === invite.challenger }
-            onSubmit={ props.onSubmitPendingInvite }
+            onSubmit={ props.onRespondInvite }
             invite={ invite }
             accepted={ invite.accepted }
             pending={ invite.pending }

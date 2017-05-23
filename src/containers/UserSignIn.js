@@ -1,12 +1,12 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import Sessions from '../components/Sessions'
-import UserMenu from '../components/UserMenu'
+import Sessions from '../components/Sessions';
+import UserMenu from '../components/UserMenu';
 
 class UserSignIn extends Component {
   constructor() {
-    super()
+    super();
 
     this.state = {
       showUserMenu: true,
@@ -14,74 +14,56 @@ class UserSignIn extends Component {
       notifications: 0,
       popupNotificationContent: null,
       input: ''
-    }
-  }
+    };
+  };
 
   toggleUserMenu() {
     this.setState({
       showUserMenu: !this.state.showUserMenu
-    })
-  }
+    });
+  };
 
   onChange( event ) {
     this.setState({
       input: event.target.value
-    })
-  }
+    });
+  };
 
   // Login
   handleSignIn( event ) {
-    event.preventDefault()
+    event.preventDefault();
 
-    let credentials = { username: this.state.input }
+    let self = this;
+    let credentials = { username: this.state.input };
 
     this.props.actions.loginUser( credentials )
+      .then( response => {
+        if ( !response.payload ) {
+          console.warn('Could not find user, attempting to create one instead!')
 
-    //
-    //     // Get pending games, update invites and notifications
-    //     this.props.axios.get(`/boards/users/${ username }`)
-    //       .then( response => {
-    //         let pendingGames = [];
-    //
-    //         for (let i = 0; i < response.data.length; i++) {
-    //           if ( response.data[i].pending ) {
-    //             response.data[i].boardId = response.data[i]._id
-    //             response.data[i].challenger = response.data[i].players[0].username
-    //             response.data[i].challengee = response.data[i].players[1].username
-    //             pendingGames.push( response.data[i] )
-    //           }
-    //         };
-    //
-    //         this.setState({
-    //           user: username,
-    //           showUserMenu: true,
-    //           invites: pendingGames,
-    //           notifications: pendingGames.length,
-    //           input: ''
-    //         });
-    //       });
+          self.props.actions.signUpUser( credentials )
+            .then( response => {
+              if ( !response.payload ) {
+                console.error('Could not create user either! Server is down or username is invalid!');
+              }
+              else {
+               self.props.actions.loadInvites( response.payload );
+              }
+            })
+        }
+        else {
+          self.props.actions.loadInvites( response.payload );
+        }
+      });
 
-      // .catch((error) => {
-      //     console.warn('Failed to find user!')
-      //     console.log('Attempting to create the user instead!')
-      //     this.props.axios.post('/users', credentials)
-      //       .then( response => {
-      //         console.log('Success creating user!')
-      //         this.setState({
-      //           user: response.data.user.username,
-      //           showUserMenu: true,
-      //           input: ''
-      //         })
-      //       })
-      //       .catch((error) => {
-      //           console.error('Could not create user either! =(')
-      //           console.error(error)
-      //           return {error: error}
-      //       })
-      // })
+      this.setState({
+        showUserMenu: true,
+        input: ''
+      });
   }
 
   onLogout( event ) {
+    this.props.actions.clearInvites()
     this.props.actions.logoutUser()
 
     this.setState({

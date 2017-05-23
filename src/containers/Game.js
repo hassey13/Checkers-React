@@ -134,8 +134,8 @@ class Game extends Component {
 
   listRecentGames() {
     let date = convertDate( new Date() )
-    console.log( date )
-    this.props.axios.get(`/boards/query/lastUpdated=${ date }`)
+
+    this.props.axios.get(`/boards/query/lastUpdated=${ date },accepted=true`)
       .then( (response) => {
         let games = response.data.filter( (game, i) => game.accepted || !game.pending )
 

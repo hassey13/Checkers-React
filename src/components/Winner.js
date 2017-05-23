@@ -2,7 +2,7 @@ import React from 'react'
 
 const Winner = ( props ) => {
 
-  let someoneHasWon = !!props.board.winner
+  let someoneHasWon = !!props.board.winner && props.board.winner.length
 
   if ( !('winner' in props.board) && !someoneHasWon  ) return (<div></div>);
 

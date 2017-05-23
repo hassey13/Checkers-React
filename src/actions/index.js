@@ -3,6 +3,7 @@ import * as boardActions from './boardActions'
 import * as invitesActions from './invitesActions'
 // import * as notificationsActions from './notificationsActions'
 
+export const signUpUser = ( credentials ) => userActions.signUpUser( credentials )
 export const loginUser = ( credentials ) => userActions.loginUser( credentials )
 export const logoutUser = ( ) => userActions.logoutUser( )
 
@@ -13,4 +14,6 @@ export const resignGame = ( boardId, user ) => boardActions.resignGame( boardId,
 export const addInvite = ( invite ) => invitesActions.addInvite( invite )
 export const inviteToGame = ( invite ) => invitesActions.inviteToGame( invite )
 export const loadInvites = ( user ) => invitesActions.loadInvites( user )
-export const rejectInvite = ( user, invite ) => invitesActions.rejectInvite( user, invite )
+export const respondInvite = ( user, invite ) => invitesActions.respondInvite( user, invite )
+export const removeInvite = ( invite ) => invitesActions.removeInvite( invite )
+export const clearInvites = ( ) => invitesActions.clearInvites( )

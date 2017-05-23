@@ -29,7 +29,6 @@ function processBoardProperty( property, value) {
       value.forEach( (piece, i) => {
         if ( piece.cellId !== null ) {
           if ( piece.color === 'blue' ) {
-            console.log(piece)
             let selectedPiece = board.players[0].pieces[piece.id-1]
             selectedPiece.king = piece.king
 

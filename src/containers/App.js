@@ -52,8 +52,19 @@ class App extends Component {
       this.props.actions.addInvite( invite )
 
       this.setState({
-        invites: [...this.state.invites, invite],
         notifications: this.state.notifications + 1
+      })
+    }
+  }
+
+  // fires when socket hears an invite was accepted
+  handleAcceptedInvite( acceptedInvite ) {
+    if ( this.props.user.length && acceptedInvite.challenger === this.props.user.username ) {
+      this.props.actions.removeInvite( acceptedInvite )
+
+      //opens notification that it was accepted and allows board load
+      this.setState({
+        popupNotificationContent: acceptedInvite
       })
     }
   }
@@ -61,20 +72,6 @@ class App extends Component {
   dismissPopupNotification() {
     this.setState({
       popupNotificationContent: null
-    })
-  }
-
-  loadBoard() {
-    this.setState({
-      loadBoard: this.state.popupNotificationContent.boardId
-    })
-    this.dismissPopupNotification()
-    this.dismissInvites()
-  }
-
-  loadedBoard() {
-    this.setState({
-      loadBoard: null
     })
   }
 
@@ -90,29 +87,17 @@ class App extends Component {
     })
   }
 
-  onChangeInvite( event ) {
+  onChangeInviteRecipient( event ) {
     this.setState({
       inviteContent: event.target.value
     })
   }
 
-  handleAcceptedInvite( acceptedInvite ) {
-    if ( this.props.user.length && acceptedInvite.challenger === this.props.user.username ) {
-      let invites = this.state.invites.filter( (invite) => invite.boardId !== acceptedInvite.boardId )
-
-      //opens notification that it was accepted and allows board load
-
-      this.setState({
-        invites: invites,
-        popupNotificationContent: acceptedInvite
-      })
-    }
-  }
-
-  onSubmitPendingInvite( event, boardId, action ) {
+  onRespondInvite( event, boardId, action ) {
     event.preventDefault()
-    let invites = this.state.invites.filter( (invite) => invite.boardId !== boardId )
-    let invite = this.state.invites.filter( (invite) => invite.boardId === boardId )[0]
+
+    let self = this;
+    let invite = this.props.invites.filter( (invite) => invite.boardId === boardId )[0]
 
     if ( action === 'accept') {
       invite.accepted = true
@@ -121,30 +106,31 @@ class App extends Component {
       this.setState({
         showInvites: false,
         loadBoard: boardId,
-        invites: invites,
-        notifications: this.state.notifications - 1
       })
 
+      this.props.actions.respondInvite( this.props.user, invite )
+      self.props.actions.loadBoard( invite.boardId )
       this.state.socket.emit('acceptedInvite', invite )
-      this.state.axios.post(`/boards/${boardId}`, { accepted: true } )
     }
     else {
-      this.state.axios.post(`/boards/${boardId}`, { accepted: false } )
+      let invite = this.props.invites.filter( (invite) => invite.boardId === boardId )[0]
+      invite.accepted = false
 
-      this.setState({
-        invites: invites,
-        notifications: this.state.notifications - 1
-      })
+      this.props.actions.respondInvite( this.props.user, invite )
     }
   }
 
-
-  onSubmitInvite( event ) {
-    // let self = this
+  onInvite( event ) {
+    let self = this
     event.preventDefault()
 
     if ( !(this.props.user && 'username' in this.props.user) ) {
-      console.error('You must login to invite someone')
+      console.error('You must login to invite someone!')
+      return
+    }
+
+    if ( this.state.inviteContent === this.props.user.username ) {
+      console.error('You cannot invite yourself!')
       return
     }
 
@@ -155,9 +141,9 @@ class App extends Component {
 
     this.props.actions.inviteToGame( invite )
       .then( ( action ) => {
-        // self.state.socket.emit('invite', action.payload )
+        self.state.socket.emit('invite', action.payload )
       })
-      .catch((error) => {
+      .catch( (error) => {
         console.error('Failed to start match!')
         console.error(error)
       })
@@ -166,7 +152,11 @@ class App extends Component {
       showUserMenu: true,
       inviteContent: ''
     })
+  }
 
+  // fix Popup Load Game notification, needs boardID
+  handleLoadGame( boardId ) {
+    this.props.actions.loadBoard( boardId )
   }
 
   render() {
@@ -195,23 +185,21 @@ class App extends Component {
           axios={ this.state.axios }
           socket={ this.state.socket }
           board={ board }
-          loadBoard={ this.state.loadBoard }
-          loadedBoard={ this.loadedBoard.bind( this ) }
           />
         <PopupNotification
           content={ this.state.popupNotificationContent }
           onDismiss={ this.dismissPopupNotification.bind( this )}
-          loadBoard={ this.loadBoard.bind( this )}
+          loadBoard={ this.handleLoadGame.bind( this )}
         />
         <Invites
           show={ this.state.showInvites }
           user={ user }
           invites={ this.props.invites }
           content={ this.state.inviteContent }
-          onSubmit={ this.onSubmitInvite.bind( this ) }
-          onChange={ this.onChangeInvite.bind( this ) }
+          onSubmit={ this.onInvite.bind( this ) }
+          onChange={ this.onChangeInviteRecipient.bind( this ) }
           onDismiss={ this.dismissInvites.bind( this ) }
-          onSubmitPendingInvite={ this.onSubmitPendingInvite.bind( this ) }
+          onRespondInvite={ this.onRespondInvite.bind( this ) }
           />
       </div>
     )

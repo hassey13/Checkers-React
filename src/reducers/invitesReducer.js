@@ -8,8 +8,12 @@ export default function invitesReducer(state=[], action){
     case 'LOAD_INVITES':
       return action.payload
 
-    case 'RESPOND_INVITE':
-      return action.payload
+    case 'REMOVE_INVITE':
+      let invites = state.filter( (invite) => action.payload.boardId !== invite.boardId )
+      return invites
+
+    case 'CLEAR_INVITES':
+      return []
 
     default:
       return state
