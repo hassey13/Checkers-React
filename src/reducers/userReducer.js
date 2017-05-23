@@ -8,6 +8,10 @@ export default function userReducer(state=[], action){
     case 'LOGOUT_USER':
       return []
 
+    case 'LOAD_ACTIVE_GAMES':
+      let user = Object.assign( {}, state, { games: [ ...action.payload ] })
+      return user
+
     default:
       return state
   }

@@ -10,7 +10,6 @@ import Winner from '../components/Winner'
 
 import Menu from './Menu'
 
-import { convertDate } from '../helpers/dateHelpers'
 import { createBoard } from '../helpers/board'
 
 
@@ -45,28 +44,21 @@ class Game extends Component {
       this.props.socket.on('move', this.socketUpdateBoard  )
       this.props.socket.on('resign', this.socketUpdateBoardWithResignation  )
     }
-
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if ( !!nextProps.loadBoard ) {
-      this.loadBoard( nextProps.loadBoard )
-      this.props.loadedBoard()
-    }
   }
 
   socketUpdateBoard( move ) {
     if ( move.boardId === this.props.board.id && this.state.session !== move.session ) {
 
-      let piece = this.props.board.findPieceByIdAndColor( move.piece.id, move.piece.color )
-      let cell = this.props.board.findCellById( move.cell )
+      let piece = this.props.board.findPieceByIdAndColor( move.piece.id, move.piece.color );
+      let cell = this.props.board.findCellById( move.cell );
 
-      let board = this.props.board
-      board.status( piece, cell )
+      let board = this.props.board;
+      board.status( piece, cell );
+
       this.setState({
         board: board,
         winner: board.checkEndOfGame()
-      })
+      });
     }
   }
 
@@ -75,17 +67,16 @@ class Game extends Component {
 
       this.setState({
         winner: resignation.winner
-      })
+      });
     }
   }
 
   newBoard() {
-    const board = createBoard()
-    this.props.actions.addBoard( board )
+    const board = createBoard();
+    this.props.actions.addBoard( board );
   }
 
   loadBoard( id ) {
-
     if ( !id || typeof id !== 'string' ) {
       id = this.state.selectedGame._id.toString()
     }
@@ -113,41 +104,40 @@ class Game extends Component {
 
   handleContinueGame() {
     if ( this.props.user.length ) {
-      console.warn('Must be logged in to continue game!')
-      return
+      console.warn('Must be logged in to continue game!');
+      return;
     }
 
-    this.props.axios.get(`/boards/users/${this.props.user.username}`)
-      .then( (response) => {
-        let games = response.data.filter( (game, i) => game.accepted || !game.pending )
-
+    this.props.actions.fetchActiveGames( this.props.user )
+      .then( () => {
         this.setState({
           showMenu: false,
           gameMenu: {
             show: true,
-            games: games,
+            games: this.props.user.games,
             submit: this.loadBoard.bind( this )
           }
-        })
+        });
+      })
+      .catch( ( err ) => {
+        console.error('Could not fetch games.')
+        console.error(err.message)
       })
   }
 
   listRecentGames() {
-    let date = convertDate( new Date() )
-
-    this.props.axios.get(`/boards/query/lastUpdated=${ date },accepted=true`)
-      .then( (response) => {
-        let games = response.data.filter( (game, i) => game.accepted || !game.pending )
-
+    this.props.actions.fetchRecentGames()
+      .then( () => {
         this.setState({
           showMenu: false,
           gameMenu: {
             show: true,
-            games: games,
+            games: this.props.menu.activeGames,
             submit: this.loadBoard.bind( this )
           }
-        })
+        });
       })
+
   }
 
   userIsPlayingInMatch( user, board ) {
@@ -156,7 +146,7 @@ class Game extends Component {
         return true
       }
     }
-    return false
+    return false;
   }
 
   handleResignGame( winner ) {
@@ -180,13 +170,13 @@ class Game extends Component {
   handleSelectGame( board ) {
     this.setState({
       selectedGame: board
-    })
+    });
   }
 
   onOptionsClick() {
     this.setState( {
       showMenu: !this.state.showMenu
-    })
+    });
   }
 
   dismissMenu() {
@@ -196,26 +186,26 @@ class Game extends Component {
   }
 
   dismissGamesMenu() {
-    let gameMenu = Object.assign({}, this.state.gameMenu, { show: false })
+    let gameMenu = Object.assign({}, this.state.gameMenu, { show: false });
     this.setState( {
       gameMenu: gameMenu
-    })
+    });
   }
 
   dismissRules() {
     this.setState( {
       showRules: false
-    })
+    });
   }
 
   showRules() {
     this.setState( {
       showRules: true
-    })
+    });
   }
 
   playersTurn( board, user ) {
-    return ( (board.turn === board.players[0].color && board.players[0].username === user) || (board.turn === board.players[1].color && board.players[1].username === user) )
+    return ( (board.turn === board.players[0].color && board.players[0].username === user) || (board.turn === board.players[1].color && board.players[1].username === user) );
   }
 
   onCellClick( cell ) {
@@ -283,10 +273,10 @@ class Game extends Component {
       }
     }
 
-    this.setState( {
+    this.setState({
       piece: piece,
       highlightedCells: highlightedCells
-    } )
+    });
   }
 
   render() {

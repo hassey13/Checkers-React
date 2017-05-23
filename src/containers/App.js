@@ -12,10 +12,6 @@ import UserSignIn from './UserSignIn'
 
 const io = require('socket.io-client')
 
-import axios from 'axios'
-axios.defaults.baseURL = 'http://localhost:4000/api'
-// axios.defaults.baseURL = 'https://react-checkers-server.herokuapp.com/api'
-
 class App extends Component {
   constructor() {
     super()
@@ -23,49 +19,46 @@ class App extends Component {
     this.state = {
       socket: null,
       showInvites: false,
-      loadBoard: null,
       inviteContent: '',
-      invites: [],
-      popupNotificationContent: null,
-      content: ''
-    }
-    this.updateNotification = this.updateNotification.bind( this )
-    this.handleAcceptedInvite = this.handleAcceptedInvite.bind( this )
+      popupNotificationContent: null
+    };
+
+    this.updateNotification = this.updateNotification.bind( this );
+    this.handleAcceptedInvite = this.handleAcceptedInvite.bind( this );
   }
 
   componentWillMount() {
-    const socket = io.connect('http://localhost:4000')
-    // const socket = io.connect('https://react-checkers-server.herokuapp.com')
+    const socket = io.connect('http://localhost:4000');
+    // const socket = io.connect('https://react-checkers-server.herokuapp.com');
 
     this.setState({
-      socket: socket,
-      axios: axios
-    })
+      socket: socket
+    });
 
-    socket.on('invite', this.updateNotification  )
-    socket.on('acceptedInvite', this.handleAcceptedInvite  )
+    socket.on('invite', this.updateNotification  );
+    socket.on('acceptedInvite', this.handleAcceptedInvite  );
   }
 
   updateNotification( invite ) {
     if ( this.props.user && 'username' in this.props.user && invite.challengee === this.props.user.username) {
 
-      this.props.actions.addInvite( invite )
+      this.props.actions.addInvite( invite );
 
       this.setState({
         notifications: this.state.notifications + 1
-      })
+      });
     }
   }
 
   // fires when socket hears an invite was accepted
   handleAcceptedInvite( acceptedInvite ) {
     if ( this.props.user.length && acceptedInvite.challenger === this.props.user.username ) {
-      this.props.actions.removeInvite( acceptedInvite )
+      this.props.actions.removeInvite( acceptedInvite );
 
       //opens notification that it was accepted and allows board load
       this.setState({
         popupNotificationContent: acceptedInvite
-      })
+      });
     }
   }
 
@@ -163,9 +156,12 @@ class App extends Component {
     const { actions } = this.props
     const user = this.props.user && 'username' in this.props.user ? this.props.user : null
     const board = !!this.props.board && 'id' in this.props.board ? this.props.board : []
+    const menu = this.props.menu ? this.props.menu : []
+
+    // console.log( menu );
 
     // Handles init of component
-    if ( !this.state.axios || !this.state.socket ) {
+    if ( !this.state.socket ) {
       return(<div>Loading...</div>)
     }
 
@@ -182,7 +178,7 @@ class App extends Component {
         <Game
           actions={ actions }
           user={ user }
-          axios={ this.state.axios }
+          menu={ menu }
           socket={ this.state.socket }
           board={ board }
           />
@@ -210,7 +206,8 @@ const mapStateToProps = (state) => {
   return {
     user: state.user,
     invites: state.invites,
-    board: state.board
+    board: state.board,
+    menu: state.menu
   }
 }
 

@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux'
 
 import invitesReducer from './invitesReducer'
-import notificationsReducer from './notificationsReducer'
+import menuReducer from './menuReducer'
 import userReducer from './userReducer'
 import boardReducer from './boardReducer'
 
 const rootReducer = combineReducers({
   user: userReducer,
-  notifications: notificationsReducer,
+  menu: menuReducer,
   invites: invitesReducer,
   board: boardReducer
 })

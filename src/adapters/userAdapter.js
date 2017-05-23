@@ -10,8 +10,12 @@ export const userAdapter = {
     return axios.get(`/users/${credentials.username}`).then( response => response.data.user )
   },
 
+  fetchActiveGames: ( user ) => {
+    return axios.get(`/boards/users/${user.username}`).then( response => response.data )
+  },
+
   queryUsers: ( query ) => {
     // return axios.get(`searchusers/${query}`).then(response => response.data)
-  },
+  }
 
 }
