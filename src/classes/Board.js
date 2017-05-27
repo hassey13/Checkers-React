@@ -65,7 +65,6 @@ export default class Board {
     let objCell = this.cells[cell.id]
     let wasAJump = this.game.validJump(objCell, piece, false)
 
-
     if (this.game.validMove(objCell, piece, true) || this.game.validJump(objCell, piece, true)) {
       this.game.move(objCell, piece)
 
@@ -75,18 +74,15 @@ export default class Board {
           }
         }
       }
-
       return true
     }
 
   checkEndOfGame() {
     if (this.players[0].activePieceCount() === 0) {
-      this.winner = this.players[1].name
-      return this.players[1].name
+      return this.players[1]
     }
     else if (this.players[1].activePieceCount() === 0) {
-      this.winner = this.players[0].name
-      return this.players[0].name
+      return this.players[0]
     }
     return null
   }

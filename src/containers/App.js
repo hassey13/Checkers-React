@@ -1,16 +1,16 @@
 import React, { Component } from 'react'
+import { bindActionCreators } from 'redux'
+import { connect } from 'react-redux'
 
-import Sessions from '../components/Sessions'
+import * as Actions from '../actions/index'
+
 import PopupNotification from '../components/PopupNotification'
-import UserMenu from '../components/UserMenu'
 import Invites from '../components/Invites'
+import ErrorComponent from '../components/Error'
 import Game from './Game'
+import UserSignIn from './UserSignIn'
 
 const io = require('socket.io-client')
-
-import axios from 'axios'
-// axios.defaults.baseURL = 'http://localhost:4000/api'
-axios.defaults.baseURL = 'https://react-checkers-server.herokuapp.com/api'
 
 class App extends Component {
   constructor() {
@@ -18,39 +18,47 @@ class App extends Component {
 
     this.state = {
       socket: null,
-      user: null,
-      showUserMenu: true,
       showInvites: false,
-      loadBoard: null,
       inviteContent: '',
-      invites: [],
-      notifications: 0,
-      popupNotificationContent: null,
-      content: ''
-    }
-    this.updateNotification = this.updateNotification.bind( this )
-    this.handleAcceptedInvite = this.handleAcceptedInvite.bind( this )
+      popupNotificationContent: null
+    };
+
+    this.updateNotification = this.updateNotification.bind( this );
+    this.handleAcceptedInvite = this.handleAcceptedInvite.bind( this );
   }
 
   componentWillMount() {
-    // const socket = io.connect('http://localhost:4000')
-    const socket = io.connect('https://react-checkers-server.herokuapp.com')
+    const socket = io.connect('http://localhost:4000');
+    // const socket = io.connect('https://react-checkers-server.herokuapp.com');
 
     this.setState({
-      socket: socket,
-      axios: axios
-    })
+      socket: socket
+    });
 
-    socket.on('invite', this.updateNotification  )
-    socket.on('acceptedInvite', this.handleAcceptedInvite  )
+    socket.on('invite', this.updateNotification  );
+    socket.on('acceptedInvite', this.handleAcceptedInvite  );
   }
 
   updateNotification( invite ) {
-    if (invite.challengee === this.state.user) {
+    if ( this.props.user && 'username' in this.props.user && invite.challengee === this.props.user.username) {
+
+      this.props.actions.addInvite( invite );
+
       this.setState({
-        invites: [...this.state.invites, invite],
         notifications: this.state.notifications + 1
-      })
+      });
+    }
+  }
+
+  // fires when socket hears an invite was accepted
+  handleAcceptedInvite( acceptedInvite ) {
+    if ( this.props.user.length && acceptedInvite.challenger === this.props.user.username ) {
+      this.props.actions.removeInvite( acceptedInvite );
+
+      //opens notification that it was accepted and allows board load
+      this.setState({
+        popupNotificationContent: acceptedInvite
+      });
     }
   }
 
@@ -60,28 +68,9 @@ class App extends Component {
     })
   }
 
-  loadBoard() {
+  showInvites( ) {
     this.setState({
-      loadBoard: this.state.popupNotificationContent.boardId
-    })
-    this.dismissPopupNotification()
-    this.dismissInvites()
-  }
-
-  handleAcceptedInvite( acceptedInvite ) {
-    if (acceptedInvite.challenger === this.state.user) {
-      let invites = this.state.invites.filter( (invite) => invite.boardId !== acceptedInvite.boardId )
-
-      this.setState({
-        invites: invites,
-        popupNotificationContent: acceptedInvite
-      })
-    }
-  }
-
-  toggleUserMenu() {
-    this.setState({
-      showUserMenu: !this.state.showUserMenu
+      showInvites: true
     })
   }
 
@@ -91,198 +80,143 @@ class App extends Component {
     })
   }
 
-  showInvites( ) {
-    this.setState({
-      showInvites: true
-    })
-  }
-
-  onChange( event ) {
-    this.setState({
-      content: event.target.value
-    })
-  }
-
-  onChangeInvite( event ) {
+  onChangeInviteRecipient( event ) {
     this.setState({
       inviteContent: event.target.value
     })
   }
 
-  onLogout( event ) {
-    this.setState({
-      user: null,
-      showUserMenu: false,
-      showInvites: false,
-      invites: [],
-      notifications: 0
-    })
-  }
-
-  onSubmitPendingInvite( event, boardId, action ) {
+  onRespondInvite( event, boardId, action ) {
     event.preventDefault()
-    let invites = this.state.invites.filter( (invite) => invite.boardId !== boardId )
-    let invite = this.state.invites.filter( (invite) => invite.boardId === boardId )[0]
 
+    let self = this;
+    let invite = this.props.invites.filter( (invite) => invite.boardId === boardId )[0]
 
     if ( action === 'accept') {
       invite.accepted = true
       invite.pending = false
+
       this.setState({
         showInvites: false,
         loadBoard: boardId,
-        invites: invites,
-        notifications: this.state.notifications - 1
       })
+
+      this.props.actions.respondInvite( this.props.user, invite )
+      self.props.actions.loadBoard( invite.boardId )
       this.state.socket.emit('acceptedInvite', invite )
-      this.state.axios.post(`/boards/${boardId}`, { accepted: true } )
     }
     else {
-      this.state.axios.post(`/boards/${boardId}`, { accepted: false } )
+      let invite = this.props.invites.filter( (invite) => invite.boardId === boardId )[0]
+      invite.accepted = false
 
-      this.setState({
-        invites: invites,
-        notifications: this.state.notifications - 1
-      })
+      this.props.actions.respondInvite( this.props.user, invite )
     }
   }
 
-  loadedBoard() {
-    this.setState({
-      loadBoard: null
-    })
-  }
-
-  // Login
-  onSubmit( event ) {
+  onInvite( event ) {
+    let self = this
     event.preventDefault()
 
-    let credentials = { username: this.state.content }
-
-    axios.get(`/users/${credentials.username}`)
-      .then( response => {
-        let username = response.data.user.username
-
-        axios.get(`/boards/users/${ username }`)
-          .then( response => {
-            let pendingGames = [];
-
-            for (let i = 0; i < response.data.length; i++) {
-              if ( response.data[i].pending ) {
-                response.data[i].boardId = response.data[i]._id
-                response.data[i].challenger = response.data[i].players[0].username
-                response.data[i].challengee = response.data[i].players[1].username
-                pendingGames.push( response.data[i] )
-              }
-            };
-
-            this.setState({
-              user: username,
-              showUserMenu: true,
-              invites: pendingGames,
-              notifications: pendingGames.length,
-              content: ''
-            });
-          });
-
-      })
-      .catch((error) => {
-          console.warn('Failed to find user!')
-          console.log('Attempting to create the user instead!')
-          axios.post('/users', credentials)
-            .then( response => {
-              console.log('Success creating user!')
-              this.setState({
-                user: response.data.user.username,
-                showUserMenu: true,
-                content: ''
-              })
-            })
-            .catch((error) => {
-                console.error('Could not create user either! =(')
-                console.error(error)
-                return {error: error}
-            })
-        })
-  }
-
-  onSubmitInvite( event ) {
-    event.preventDefault()
-
-    if ( !this.state.user ) {
-      console.error('You must login to invite someone')
+    if ( !(this.props.user && 'username' in this.props.user) ) {
+      console.error('You must login to invite someone!')
       return
     }
 
-    let credentials = {
-      challenger: this.state.user,
+    if ( this.state.inviteContent === this.props.user.username ) {
+      console.error('You cannot invite yourself!')
+      return
+    }
+
+    let invite = {
+      challenger: this.props.user.username,
       challengee: this.state.inviteContent
     }
 
-    axios.post('/boards', credentials)
-      .then( response => {
-        credentials.boardId = response.data.board._id.toString()
-        this.setState({
-          invites: [...this.state.invites, { ...credentials, accepted: false, pending: true } ],
-          showUserMenu: true,
-          inviteContent: ''
-        })
-        this.state.socket.emit('invite', credentials )
+    this.props.actions.inviteToGame( invite )
+      .then( ( action ) => {
+        self.state.socket.emit('invite', action.payload )
       })
-      .catch((error) => {
+      .catch( (error) => {
         console.error('Failed to start match!')
         console.error(error)
       })
 
+    this.setState({
+      showUserMenu: true,
+      inviteContent: ''
+    })
+  }
+
+  // fix Popup Load Game notification, needs boardID
+  handleLoadGame( boardId ) {
+    this.props.actions.loadBoard( boardId )
   }
 
   render() {
+    const { actions } = this.props
+    const user = this.props.user && 'username' in this.props.user ? this.props.user : null
+    const board = !!this.props.board && 'id' in this.props.board ? this.props.board : []
+    const menu = this.props.menu ? this.props.menu : []
 
-    if ( !this.state.axios || !this.state.socket ) {
+    // console.log( menu );
+
+    // Handles init of component
+    if ( !this.state.socket ) {
       return(<div>Loading...</div>)
     }
 
     return (
       <div>
-        <Sessions
-          user={ this.state.user }
-          notifications={ this.state.notifications }
-          onClick={ this.toggleUserMenu.bind( this )} />
+        <ErrorComponent
+          message={ null }
+          />
+        <UserSignIn
+          actions={ actions }
+          user={ user }
+          showInvites={ this.showInvites.bind( this )}
+          />
+        <Game
+          actions={ actions }
+          user={ user }
+          menu={ menu }
+          socket={ this.state.socket }
+          board={ board }
+          />
         <PopupNotification
           content={ this.state.popupNotificationContent }
           onDismiss={ this.dismissPopupNotification.bind( this )}
-          loadBoard={ this.loadBoard.bind( this )}
-        />
-        <UserMenu
-          show={ this.state.showUserMenu }
-          user={ this.state.user }
-          notifications={ this.state.notifications }
-          showInvites={ this.showInvites.bind( this )}
-          onLogout={ this.onLogout.bind( this )}
-          onSubmit={ this.onSubmit.bind( this )}
-          onChange={ this.onChange.bind( this )}
-          content={ this.state.content }
+          loadBoard={ this.handleLoadGame.bind( this )}
         />
         <Invites
           show={ this.state.showInvites }
-          user={ this.state.user }
-          invites={ this.state.invites }
+          user={ user }
+          invites={ this.props.invites }
           content={ this.state.inviteContent }
-          onSubmit={ this.onSubmitInvite.bind( this ) }
-          onChange={ this.onChangeInvite.bind( this ) }
+          onSubmit={ this.onInvite.bind( this ) }
+          onChange={ this.onChangeInviteRecipient.bind( this ) }
           onDismiss={ this.dismissInvites.bind( this ) }
-          onSubmitPendingInvite={ this.onSubmitPendingInvite.bind( this ) }
+          onRespondInvite={ this.onRespondInvite.bind( this ) }
           />
-        <Game
-          axios={ this.state.axios }
-          socket={ this.state.socket }
-          user={ this.state.user }
-          loadBoard={ this.state.loadBoard }
-          loadedBoard={ this.loadedBoard.bind( this ) }
-        />
       </div>
     )
   }
 }
 
-export default App
+const mapStateToProps = (state) => {
+  return {
+    user: state.user,
+    invites: state.invites,
+    board: state.board,
+    menu: state.menu
+  }
+}
+
+const mapDispatchToProps = ( dispatch ) => {
+  return ({
+    actions: bindActionCreators(Actions, dispatch)
+})}
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+  )( App )

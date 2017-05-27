@@ -3,13 +3,13 @@ import React from 'react'
 import NotificationAlert from './NotificationAlert'
 
 const UserMenu = ( props ) => {
+  let loggedIn = !!props.user
 
-  let user = !!props.user ? props.user : 'Not Logged In'
+  let user = loggedIn ? props.user.username : 'Not Logged In'
   let className = !!props.show ? 'user-menu' : 'hide'
-
-  let loggedIn = !!props.user ? 'user-menu-button-container' : 'hide'
-  let showLoginForm = !!props.user ? 'hide' : 'login-form'
-  let finePrint = !!props.user ? '' : "You don't have to signup"
+  let buttonContainerClass = loggedIn ? 'user-menu-button-container' : 'hide'
+  let showLoginForm = loggedIn ? 'hide' : 'login-form'
+  let finePrint = loggedIn ? '' : "You don't have to signup"
 
   return (
     <div className={ className }>
@@ -17,7 +17,7 @@ const UserMenu = ( props ) => {
         <p className='username-font'>{ user }</p>
       </div>
 
-      <div className={ loggedIn }>
+      <div className={ buttonContainerClass }>
         <div className='user-menu-button' onClick={ props.showInvites }>
           Invites
           <NotificationAlert number={ props.notifications } invites={ true } />
@@ -30,7 +30,7 @@ const UserMenu = ( props ) => {
       <div className={ showLoginForm } >
         <form onSubmit={ props.onSubmit } >
           <label className='username-label'>Username
-          <input className='login-input' name='username' type='text' onChange={ props.onChange } value={ props.content } />
+          <input className='login-input' name='username' type='text' onChange={ props.onChange } value={ props.input } />
           </label>
           <input className='login-submit' type='submit' value='Login' />
         </form>

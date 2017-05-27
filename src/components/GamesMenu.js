@@ -1,6 +1,6 @@
 import React from 'react'
 
-import Game from './Game'
+import Match from './Match'
 
 const GamesMenu = ( props ) => {
   let className = props.show ? 'games-menu' : 'hide'
@@ -24,7 +24,7 @@ const GamesMenu = ( props ) => {
       <div>
         {
           props.games.map( (game, i) => (
-            <Game
+            <Match
               key={i}
               selectedGame={ props.selectedGame }
               selected={ props.selectedGame !== null && props.selectedGame._id.toString() === game._id.toString() }

@@ -2,7 +2,9 @@ import React from 'react'
 
 const GameInfo = ( props ) => {
 
-  if ( !props.board.id ) {
+  if ( !('cells' in props.board) ) return ( <div> Initializing Game... </div> )
+
+  if ( !props.board.id  ) {
     return (
       <div className='game-info' >
         <p className='small-font'>Global Match</p>
@@ -10,7 +12,8 @@ const GameInfo = ( props ) => {
     )
   }
 
-  if ( props.board.players[0].username !== props.user && props.board.players[1].username !== props.user ) {
+
+  if ( !props.user || (props.board.players[0].username !== props.user.username && props.board.players[1].username !== props.user.username) ) {
     return(
       <div className='game-info' >
         <p className='small-font'>{ `Match between ${props.board.players[0].username} and ${props.board.players[1].username}` }</p>
@@ -20,7 +23,7 @@ const GameInfo = ( props ) => {
 
   return (
     <div className='game-info' >
-      <p className='small-font'>{ `Match against ${ props.board.players[0].username === props.user ? props.board.players[1].username : props.board.players[0].username}` }</p>
+      <p className='small-font'>{ `Match against ${ props.board.players[0].username === props.user.username ? props.board.players[1].username : props.board.players[0].username}` }</p>
     </div>
   )
 }

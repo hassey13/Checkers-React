@@ -14,8 +14,8 @@ const Invites = ( props ) => {
         { props.invites.length > 0 ? props.invites.map( (invite, i) => (
           <Invite
             key={i}
-            ownInvite={ props.user === invite.challenger }
-            onSubmit={ props.onSubmitPendingInvite }
+            ownInvite={ props.user.username === invite.challenger }
+            onSubmit={ props.onRespondInvite }
             invite={ invite }
             accepted={ invite.accepted }
             pending={ invite.pending }
