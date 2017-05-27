@@ -43,16 +43,13 @@ class App extends Component {
     if ( this.props.user && 'username' in this.props.user && invite.challengee === this.props.user.username) {
 
       this.props.actions.addInvite( invite );
-
-      this.setState({
-        notifications: this.state.notifications + 1
-      });
+      this.props.actions.incrementNotifications()
     }
   }
 
   // fires when socket hears an invite was accepted
   handleAcceptedInvite( acceptedInvite ) {
-    if ( this.props.user.length && acceptedInvite.challenger === this.props.user.username ) {
+    if ( 'username' in this.props.user && acceptedInvite.challenger === this.props.user.username ) {
       this.props.actions.removeInvite( acceptedInvite );
 
       //opens notification that it was accepted and allows board load
@@ -97,19 +94,20 @@ class App extends Component {
       invite.pending = false
 
       this.setState({
-        showInvites: false,
-        loadBoard: boardId,
+        showInvites: false
       })
 
       this.props.actions.respondInvite( this.props.user, invite )
       self.props.actions.loadBoard( invite.boardId )
       this.state.socket.emit('acceptedInvite', invite )
+      self.props.actions.decrementNotifications()
     }
     else {
       let invite = this.props.invites.filter( (invite) => invite.boardId === boardId )[0]
       invite.accepted = false
 
       this.props.actions.respondInvite( this.props.user, invite )
+      self.props.actions.decrementNotifications()
     }
   }
 
@@ -142,7 +140,6 @@ class App extends Component {
       })
 
     this.setState({
-      showUserMenu: true,
       inviteContent: ''
     })
   }
@@ -150,6 +147,12 @@ class App extends Component {
   // fix Popup Load Game notification, needs boardID
   handleLoadGame( boardId ) {
     this.props.actions.loadBoard( boardId )
+
+    this.setState({
+      popupNotificationContent: null,
+      showInvites: false
+    })
+
   }
 
   render() {
@@ -157,8 +160,6 @@ class App extends Component {
     const user = this.props.user && 'username' in this.props.user ? this.props.user : null
     const board = !!this.props.board && 'id' in this.props.board ? this.props.board : []
     const menu = this.props.menu ? this.props.menu : []
-
-    // console.log( menu );
 
     // Handles init of component
     if ( !this.state.socket ) {
@@ -174,6 +175,7 @@ class App extends Component {
           actions={ actions }
           user={ user }
           showInvites={ this.showInvites.bind( this )}
+          notifications={ this.props.notifications }
           />
         <Game
           actions={ actions }
@@ -185,7 +187,7 @@ class App extends Component {
         <PopupNotification
           content={ this.state.popupNotificationContent }
           onDismiss={ this.dismissPopupNotification.bind( this )}
-          loadBoard={ this.handleLoadGame.bind( this )}
+          handleLoadBoard={ this.handleLoadGame.bind( this )}
         />
         <Invites
           show={ this.state.showInvites }
@@ -206,6 +208,7 @@ const mapStateToProps = (state) => {
   return {
     user: state.user,
     invites: state.invites,
+    notifications: state.notifications,
     board: state.board,
     menu: state.menu
   }

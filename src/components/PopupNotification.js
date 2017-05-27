@@ -9,7 +9,7 @@ const PopupNotification = ( props ) => {
     <div className={ className }>
       <div className='popup-notification-dismiss' onClick={ props.onDismiss } >X</div>
       <p>{ content }</p>
-      <div className='user-menu-button' onClick={ props.loadBoard }>
+      <div className='user-menu-button' onClick={ () => { props.handleLoadBoard( props.content.boardId ) } }>
         Load Game
       </div>
     </div>

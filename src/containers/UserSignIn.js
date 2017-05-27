@@ -11,7 +11,6 @@ class UserSignIn extends Component {
     this.state = {
       showUserMenu: true,
       showInvites: false,
-      notifications: 0,
       popupNotificationContent: null,
       input: ''
     };
@@ -47,12 +46,18 @@ class UserSignIn extends Component {
                 console.error('Could not create user either! Server is down or username is invalid!');
               }
               else {
-               self.props.actions.loadInvites( response.payload );
+               self.props.actions.loadInvites( response.payload )
+                 .then( (action) => {
+                   self.props.actions.loadNotifications( action.payload.length )
+                 })
               }
             })
         }
         else {
-          self.props.actions.loadInvites( response.payload );
+          self.props.actions.loadInvites( response.payload )
+            .then( (action) => {
+              self.props.actions.loadNotifications( action.payload.length )
+            })
         }
       });
 
@@ -65,12 +70,12 @@ class UserSignIn extends Component {
   onLogout( event ) {
     this.props.actions.clearInvites()
     this.props.actions.logoutUser()
+    this.props.actions.clearNotifications()
 
     this.setState({
       showUserMenu: false,
       showInvites: false,
       invites: [],
-      notifications: 0
     })
   }
 

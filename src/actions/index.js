@@ -1,6 +1,7 @@
 import * as userActions from './userActions'
 import * as boardActions from './boardActions'
 import * as invitesActions from './invitesActions'
+import * as notificationsActions from './notificationsActions'
 import * as menuActions from './menuActions'
 
 export const signUpUser = ( credentials ) => userActions.signUpUser( credentials )
@@ -23,3 +24,8 @@ export const removeInvite = ( invite ) => invitesActions.removeInvite( invite )
 export const clearInvites = ( ) => invitesActions.clearInvites( )
 
 export const fetchRecentGames = ( ) => menuActions.fetchRecentGames( )
+
+export const loadNotifications = ( count ) => notificationsActions.loadNotifications( count )
+export const incrementNotifications = ( ) => notificationsActions.incrementNotifications( )
+export const decrementNotifications = ( ) => notificationsActions.decrementNotifications( )
+export const clearNotifications = ( ) => notificationsActions.clearNotifications( )
