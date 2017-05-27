@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
 
 import GamesMenu from '../components/GamesMenu'
 import GameBoard from '../components/Board'
@@ -29,7 +28,6 @@ class Game extends Component {
         submit: null
       },
       showRules: false,
-      winner: null,
       highlightedCells: []
     }
     this.socketUpdateBoard = this.socketUpdateBoard.bind(this)
@@ -55,19 +53,20 @@ class Game extends Component {
       let board = this.props.board;
       board.status( piece, cell );
 
+      if ( !this.props.board.winner  && !!this.props.board.checkEndOfGame() ) {
+        this.props.actions.sendWinner( this.props.board.id, this.props.board.checkEndOfGame() )
+      }
+
       this.setState({
-        board: board,
-        winner: board.checkEndOfGame()
-      });
+        board: board
+      })
     }
   }
 
   socketUpdateBoardWithResignation( resignation ) {
     if ( resignation.boardId === this.props.board.id && this.state.session !== resignation.session ) {
-
-      this.setState({
-        winner: resignation.winner
-      });
+      console.log( resignation )
+      this.props.actions.updateWinner( resignation.winner )
     }
   }
 
@@ -82,7 +81,11 @@ class Game extends Component {
     }
 
     this.props.actions.loadBoard( id )
-      .then( () => {
+      .then( ( action ) => {
+        if ( !this.props.board.winner  && !!this.props.board.checkEndOfGame() ) {
+          this.props.actions.sendWinner( this.props.board.id, this.props.board.checkEndOfGame() )
+        }
+
         this.setState( {
           highlightedCells: [],
           piece: null,
@@ -103,7 +106,7 @@ class Game extends Component {
   }
 
   handleContinueGame() {
-    if ( this.props.user.length ) {
+    if ( !this.props.user ) {
       console.warn('Must be logged in to continue game!');
       return;
     }
@@ -149,7 +152,7 @@ class Game extends Component {
     return false;
   }
 
-  handleResignGame( winner ) {
+  handleResignGame() {
     let user = this.props.user;
 
     if ( this.userIsPlayingInMatch( user, this.props.board ) ) {
@@ -158,7 +161,7 @@ class Game extends Component {
       this.props.socket.emit('resign', {
         session: this.state.session,
         boardId: this.props.board.id,
-        winner: winner
+        winner: this.props.board.players[0].username === user.username ? { username: this.props.board.players[1].username } : { username: this.props.board.players[0].username }
       } );
     }
     else {
@@ -209,20 +212,22 @@ class Game extends Component {
   }
 
   onCellClick( cell ) {
-    let username = this.props.user.length ? this.props.user.username : null
+    let username = this.props.user ? this.props.user.username : null
     if ( this.state.piece && this.playersTurn( this.props.board, username ) ) {
 
       if ( this.props.board.game.validJump( cell, this.state.piece, false ) && !!this.props.board.id ) {
 
         //send jumped piece to server
         if ( this.props.board.id ) {
-          this.props.axios.post(`/boards/${this.props.board.id}`, {
+          let move = {
             piece: {
               id: this.props.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.id,
               color: this.props.board.cells[ ( cell.id - ( ( cell.id - this.state.piece.cell.id ) / 2 ) )].piece.player.color,
               cellId: null
             }
-          } )
+          }
+
+          this.props.actions.updatePiece( this.props.board.id, move )
         }
       }
 
@@ -243,7 +248,7 @@ class Game extends Component {
 
       //send moved piece to server
       if ( this.props.board.id ) {
-        this.props.axios.post(`/boards/${this.props.board.id}`, {
+        let move = {
           turn: (this.state.piece.player.color === 'blue' ? 'red' : 'blue'),
           piece: {
             id: this.state.piece.id,
@@ -251,13 +256,18 @@ class Game extends Component {
             king: this.state.piece.king,
             cellId: this.state.piece.cell.id
           }
-        } )
+        }
+        this.props.actions.updatePiece( this.props.board.id, move )
+      }
+
+      if ( !!this.props.board.checkEndOfGame() ) {
+        console.log(this.props.board.checkEndOfGame())
+        this.props.actions.sendWinner( this.props.board.id, this.props.board.checkEndOfGame() )
       }
 
       this.setState( {
         piece: null,
-        highlightedCells: [],
-        winner: this.props.board.checkEndOfGame()
+        highlightedCells: []
       } )
     }
   }
@@ -280,7 +290,6 @@ class Game extends Component {
   }
 
   render() {
-
     return (
       <div>
         <PlayerBar
@@ -324,13 +333,5 @@ class Game extends Component {
     )
   }
 }
-const mapStateToProps = (state) => {
-  return {
-    user: state.user
-  }
-}
 
-export default connect(
-  mapStateToProps,
-  null
-  )( Game )
+export default Game

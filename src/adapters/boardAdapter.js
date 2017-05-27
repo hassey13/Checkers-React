@@ -9,15 +9,23 @@ export const boardAdapter = {
       .catch( err => err.message)
   },
 
-  resignGame: ( boardId, user ) => {
-
-    return axios.post(`/boards/${ boardId }`, { winner: user } )
-      .then( response => response.data )
+  updatePiece: ( boardId, move ) => {
+    return axios.post(`/boards/${ boardId }`, move)
+      .then( response => response )
       .catch( err => err.message)
   },
 
-  queryBoards: ( query ) => {
-    // return axios.get(`searchusers/${query}`).then(response => response.data)
+  sendWinner: ( boardId, winner ) => {
+    return axios.post(`/boards/${ boardId }`, winner)
+      .then( response => response )
+      .catch( err => err)
   },
+
+  resignGame: ( boardId, user ) => {
+    return axios.post(`/boards/${ boardId }`, { resign: user } )
+      .then( response => response )
+      .catch( err => {
+        console.log(err.message); return {} })
+  }
 
 }

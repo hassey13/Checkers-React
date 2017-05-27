@@ -13,11 +13,13 @@ class Menu extends Component {
   }
 
   resignGame() {
-    if ( this.props.board.players[0].username === this.props.user ) {
-      this.props.handleResignGame('RED')
+    if ( this.props.user ) {
+      if ( this.props.board.players[0].username === this.props.user.username  || this.props.board.players[1].username === this.props.user.username ) {
+        this.props.handleResignGame()
+      }
     }
-    else if ( this.props.board.players[1].username === this.props.user ) {
-      this.props.handleResignGame('BLUE')
+    else {
+      console.error('Must be logged in to resign!')
     }
 
     this.props.onDismiss()

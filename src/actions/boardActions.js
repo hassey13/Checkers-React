@@ -2,8 +2,9 @@ import { boardAdapter } from '../adapters/boardAdapter'
 import { createBoard } from '../helpers/board'
 
 const ADD_BOARD = 'ADD_BOARD'
+const UPDATE_PIECE = 'UPDATE_PIECE'
 const LOAD_BOARD = 'LOAD_BOARD'
-const RESIGN_GAME = 'RESIGN_GAME'
+const UPDATE_WINNER = 'UPDATE_WINNER'
 
 export const addBoard = ( board ) => {
 
@@ -18,11 +19,12 @@ export const loadBoard = ( boardId ) => {
   const Board = boardAdapter.loadBoard( boardId )
     .then( response => {
 
+
       let options = {
         id: response._id.toString(),
         turn: response.turn,
-        winner: response.winner,
         players: response.players,
+        winner: response.winner,
         pieces: response.pieces
       }
 
@@ -35,15 +37,55 @@ export const loadBoard = ( boardId ) => {
   }
 }
 
-export const resignGame = ( boardId, user ) => {
+export const updatePiece = ( boardId, move ) => {
 
-  const Winner = boardAdapter.resignGame( boardId, user )
-    .then( response => {
-      debugger
-    })
+  boardAdapter.updatePiece( boardId, move )
+    .then( response => response )
 
   return {
-    type: RESIGN_GAME,
+    type: UPDATE_PIECE,
+    payload: null
+  }
+}
+
+export const sendWinner = ( boardId, winner ) => {
+
+  let params = {
+    winner: {
+      username: winner.username
+    }
+  }
+
+  const Winner = boardAdapter.sendWinner( boardId, params )
+    .then( response => response.data.winner[0] )
+
+  return {
+    type: UPDATE_WINNER,
+    payload: Winner
+  }
+}
+
+export const updateWinner = ( winner ) => {
+
+  return {
+    type: UPDATE_WINNER,
+    payload: winner
+  }
+}
+
+export const resignGame = ( boardId, user ) => {
+
+  let params = {
+    resign: {
+      username: user.username
+    }
+  }
+
+  const Winner = boardAdapter.resignGame( boardId, params )
+    .then( response => response.data.winner[0] )
+
+  return {
+    type: UPDATE_WINNER,
     payload: Winner
   }
 }

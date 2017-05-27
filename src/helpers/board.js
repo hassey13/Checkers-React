@@ -15,8 +15,10 @@ function processBoardProperty( property, value) {
       break;
 
     case 'winner':
-      // fix winner so this sets properly
-      board.winner = value;
+      if ( value.length ) {
+        let victor = board.players[0].username === value[0].username ? board.players[0] : board.players[1]
+        board.winner = victor;
+      }
       break;
 
     case 'players':

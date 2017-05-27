@@ -390,6 +390,12 @@ nav li {
   font-family: arial;
   letter-spacing: 1px;
   font-size: 0.6em;
+  color: #fff;
+  font-size: .6em;
+}
+
+.extra-small {
+  font-size: .3em;
 }
 
 .noselect {

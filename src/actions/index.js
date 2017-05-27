@@ -10,6 +10,9 @@ export const fetchActiveGames = ( user ) => userActions.fetchActiveGames( user )
 
 export const addBoard = ( board ) => boardActions.addBoard( board )
 export const loadBoard = ( boardId ) => boardActions.loadBoard( boardId )
+export const updatePiece = ( boardId, move ) => boardActions.updatePiece( boardId, move )
+export const sendWinner = ( boardId, move ) => boardActions.sendWinner( boardId, move )
+export const updateWinner = ( winner ) => boardActions.updateWinner( winner )
 export const resignGame = ( boardId, user ) => boardActions.resignGame( boardId, user )
 
 export const addInvite = ( invite ) => invitesActions.addInvite( invite )
